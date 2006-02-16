@@ -103,7 +103,7 @@ function logintoboggan_menu($may_cache) {
 
 /**
  * Rewrite of user_login()
- * 
+ *
  * Changes here should be better documented...
  *
  * @param string $msg
@@ -293,7 +293,7 @@ function _logintoboggan_register() {
         user_mail($edit['mail'], $subject, $body, "From: $from\nReply-to: $from\nX-Mailer: Drupal\nReturn-path: $from\nErrors-to: $from");
         user_mail(variable_get('site_mail', ini_get('sendmail_from')), $subject, t("%u has applied for an account.\n\n%uri", array('%u' => $account->name, '%uri' => url("user/$account->uid/edit", NULL, NULL, TRUE))), "From: $from\nReply-to: $from\nX-Mailer: Drupal\nReturn-path: $from\nErrors-to: $from");
         drupal_set_message(t('Thank you for applying for an account. Your account is currently pending approval by the site administrator.<br />In the meantime, your password and further instructions have been sent to your e-mail address.'));
-        
+
         drupal_goto();
       }
     }
@@ -366,19 +366,22 @@ function logintoboggan_block($op = 'list', $delta = 0, $edit = array()) {
 
   switch ($op) {
     case 'list' :
-      $blocks[0]['info'] = t('LoginToboggan login link');
-      $blocks[1]['info'] = t('LoginToboggan collapsible login');
+      $blocks[0]['info'] = t('LoginToboggan custom login');
       return $blocks;
       break;
     case 'configure':
-      if ($delta == 1){
+      if ($delta == 0){
+		    $output .= form_checkbox(t('Display the \'logged in\' block'), 'toboggan_display_logged_in', 1, variable_get('toboggan_display_logged_in', 1));
+		    $output .= form_radios(t('Block type'), 'toboggan_block_type', variable_get('toboggan_block_type', 1), array(t('Link'), t('Collapsible Form')));
         $output .= form_textarea(t('Set a custom message to appear at the top of your login block'), 'toboggan_block_msg', variable_get('toboggan_block_msg', ''), 200, 5);
-        
+
         return $output;
       }
       break;
     case 'save' :
-      if ($delta == 1){
+      if ($delta == 0){
+        variable_set('toboggan_block_type', $edit['toboggan_block_type']);
+        variable_set('toboggan_display_logged_in', $edit['toboggan_display_logged_in']);
         variable_set('toboggan_block_msg', $edit['toboggan_block_msg']);
       }
       break;
@@ -386,22 +389,22 @@ function logintoboggan_block($op = 'list', $delta = 0, $edit = array()) {
       if (user_access('access content')) {
         switch ($delta) {
           case 0:
-            $block['subject'] = '';
-            $block['content'] = _logintoboggan_link();
-            return $block;
-          case 1:
+
             // For usability's sake, avoid showing two login forms on one page.
             if (!$user->uid && !(arg(0) == 'user' && !is_numeric(arg(1))) && !(arg(0) == 'toboggan')) {
-              $edit = $_POST['edit'];
-              $block['subject'] = '';
-              $block['content'] = _logintoboggan_toggleboggan($edit);
+              if (variable_get('toboggan_block_type', 1) == 1) {
+                $edit = $_POST['edit'];
+				        $block['content'] = _logintoboggan_toggleboggan($edit);
+			        }
+			        else {
+			          $block['content'] = l(t('Login/Register'), 'user/login', array(), drupal_get_destination());
+              }
             }
-            elseif ($user->uid) {
-              $block['subject'] = '';
+            elseif ($user->uid && variable_get('toboggan_display_logged_in', 1)) {
               $block['content'] =  theme('lt_loggedinblock');
             }
-            return $block;
         }
+        return $block;
       }
       break;
   }
@@ -475,7 +478,7 @@ function logintoboggan_settings() {
   $group = form_radios(t('Present login form on access denied (403)'), 'site_403', $site403, $options, t('Anonymous users will be presented with a login form along with an access denied message.'));
   $group .= form_radios(t("Redirect Drupal's login paths"), 'toboggan_hijack', variable_get('toboggan_hijack', 1), array(t('disabled'), t('enabled')), t('If enabled, anonymous users who are sent to "user/login", "user/register", or "user/password" will be redirected to the Login Toboggan counterparts. (Enabled by default)'));
   $output .= form_group(t('Other'), $group);
-  
+
   return $output;
 
 }
@@ -678,7 +681,7 @@ function logintoboggan_eml_rehash($password, $timestamp, $mail){
 }
 
 /**
- * Simple callback function to set the proper page title before forwarding to 
+ * Simple callback function to set the proper page title before forwarding to
  * request password screen.
  */
 function logintoboggan_pass() {

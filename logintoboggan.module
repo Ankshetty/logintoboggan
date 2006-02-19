@@ -78,9 +78,11 @@ function logintoboggan_menu($may_cache) {
 
     //local tab for user validate routine
     $items[] = array('path' => 'user/validate', 'title' => t('validate email address'),
-    'callback' => 'logintoboggan_validate_email', 'access' => TRUE, 'type' => MENU_CALLBACK);
+      'callback' => 'logintoboggan_validate_email', 'access' => TRUE, 'type' => MENU_CALLBACK);
 
-    $items[] = array('path' => 'toboggan/denied', 'access' => TRUE, 'callback' => 'logintoboggan_denied', 'title' => t('access denied'), 'type' => MENU_CALLBACK);
+    //callback for handling access denied redirection
+    $items[] = array('path' => 'toboggan/denied', 'title' => t('access denied'),
+      'callback' => 'logintoboggan_denied', 'access' => TRUE, 'type' => MENU_CALLBACK);
 
   }
   else {
@@ -97,6 +99,11 @@ function logintoboggan_menu($may_cache) {
         }
       }
     }
+
+    //callback for re-sending validation e-mail
+    $items[] = array('path' => 'toboggan/revalidate', 'title' => t('re-send validation e-mail'),
+      'callback' => 'logintoboggan_resend_validation', 'callback arguments' => arg(2),
+      'access' => $user->uid == arg(2), 'type' => MENU_CALBACK);
   }
   return $items;
 }
@@ -687,4 +694,40 @@ function logintoboggan_eml_rehash($password, $timestamp, $mail){
 function logintoboggan_pass() {
   drupal_set_title(t('request new password'));
   user_pass();
+}
+
+/**
+ * Implementation of hook_user().
+ */
+function logintoboggan_user($op, &$edit, &$user_edit, $category = NULL) {
+  if ($op == 'form' && $category == 'account' && $user->uid == arg(1)) {
+    // User is editing their own account settings
+    if ((variable_get('reg_passwd_set', 0) || variable_get('toboggan_immed_login', 0)) && array_key_exists(logintoboggan_validating_id(), $user_edit->roles)) {
+      // User has not yet validated their account; display link to re-send e-mail.
+      return array(array('title' => t('Account validation'), 'data' => l(t('re-send validation e-mail'), 'toboggan/revalidate/'. $user_edit->uid), 'weight' => -10));
+    }
+  }
+}
+
+/**
+ * Re-sends validation e-mail to user specified by $uid.
+ */
+function logintoboggan_resend_validation($uid) {
+  global $base_url;
+
+  $account = user_load(array('uid' => $uid));
+
+  // Variables to replace in e-mail
+  $pass = t('If required, you may reset your password from: %url', array('%url' => url('user/password', NULL, NULL, TRUE)));
+  $variables = array('%username' => $account->name, '%site' => variable_get('site_name', 'drupal'), '%password' => $pass, '%uri' => $base_url, '%uri_brief' => substr($base_url, strlen('http://')), '%mailto' => $account->mail, '%date' => format_date(time()), '%login_uri' => url('user', NULL, NULL, TRUE), '%edit_uri' => url('user/'. $account->uid .'/edit', NULL, NULL, TRUE), '%login_url' => logintoboggan_eml_validate_url($account));
+
+  // Prepare and send e-mail.
+  $from = variable_get('site_mail', ini_get('sendmail_from'));
+  $subject = _user_mail_text('welcome_subject', $variables);
+  $body = _user_mail_text('welcome_body', $variables);
+  user_mail($account->mail, $subject, $body, "From: $from\nReply-to: $from\nX-Mailer: Drupal\nReturn-path: $from\nErrors-to: $from");
+
+  // Notify user that e-mail was sent and return to user edit form.
+  drupal_set_message(t('A validation email has been sent to your e-mail address. You will need to follow the instructions in that message in order to gain full access to the site.'));
+  drupal_goto('user/'. $account->uid .'/edit');
 }

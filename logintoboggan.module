@@ -700,6 +700,8 @@ function logintoboggan_pass() {
  * Implementation of hook_user().
  */
 function logintoboggan_user($op, &$edit, &$user_edit, $category = NULL) {
+  global $user;
+
   if ($op == 'form' && $category == 'account' && $user->uid == arg(1)) {
     // User is editing their own account settings
     if ((variable_get('reg_passwd_set', 0) || variable_get('toboggan_immed_login', 0)) && array_key_exists(logintoboggan_validating_id(), $user_edit->roles)) {

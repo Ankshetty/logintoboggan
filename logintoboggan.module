@@ -232,9 +232,10 @@ function _logintoboggan_register() {
     }
 
     //We're hacking q here to get around the hardcoded check for user/register in profile module's validation code
+    $q = $_GET['q'];
     $_GET['q'] = 'user/register';
     user_module_invoke('validate', $edit, $edit, 'account');
-    $_GET['q'] = 'toboggan/register';
+    $_GET['q'] = $q;
 
     if (!form_get_errors()) {
       //unset the confirmation variables because we don't care anymore and we don't want them stored

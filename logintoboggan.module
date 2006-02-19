@@ -102,8 +102,8 @@ function logintoboggan_menu($may_cache) {
 
     //callback for re-sending validation e-mail
     $items[] = array('path' => 'toboggan/revalidate', 'title' => t('re-send validation e-mail'),
-      'callback' => 'logintoboggan_resend_validation', 'callback arguments' => arg(2),
-      'access' => $user->uid == arg(2), 'type' => MENU_CALBACK);
+      'callback' => 'logintoboggan_resend_validation', 'callback arguments' => array(arg(2)),
+      'access' => $user->uid == arg(2), 'type' => MENU_CALLBACK);
   }
   return $items;
 }

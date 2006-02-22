@@ -440,7 +440,7 @@ function theme_lt_loggedinblock(){
  */
 function _logintoboggan_toggleboggan ($edit = array()){
   $output = '<div id="toboggan-container">';
-  $output .= l(t('Login/Register'), 'toboggan/login', array('onclick' => "toggleboggan('toboggan_login');this.blur();return false;"));
+  $output .= l(t('Login/Register'), 'toboggan/login', array('onclick' => "toggleboggan('toboggan-login');this.blur();return false;"));
   //Grab the message from settings if there is one to display at the top of the login block.
 
   if ($login_msg = variable_get('toboggan_block_msg', '')) {
@@ -467,7 +467,7 @@ function _logintoboggan_toggleboggan ($edit = array()){
   $output .= '$obj = document.getElementById($id);';
   $output .= '$obj.style.display = ($obj.style.display == \'none\') ? \'block\' : \'none\';}';
   // for compatibility with non-js browsers:
-  $output .= 'document.getElementById(\'toboggan_login\').style.display = \'none\';';
+  $output .= 'document.getElementById(\'toboggan-login\').style.display = \'none\';';
   // ]]>
   $output .= '</script>';
   return $output;

@@ -578,7 +578,9 @@ function theme_lt_access_denied() {
 // which would show 'Access Denied' after login... what good is that!?
 function logintoboggan_destination() {
   global $base_url;
-  // Drupal has reset $_GET[q], so we need a workaround.
+  // Drupal has reset $_GET[q], so we need a workaround. Start with home page,
+  // then try to determine the correct destination.
+  $destination = 'destination=node';
   $full_path = 'http://'. $_SERVER['SERVER_NAME'] . request_uri();
   if ($internal_path = substr($full_path, strlen($base_url . '/'))) {
     $uriarray = explode('/', $internal_path);
@@ -587,11 +589,7 @@ function logintoboggan_destination() {
     }
     $destination = 'destination='. implode('/', $uriarray);
   }
-  else {
-    // can't get uri?
-    // so we'll fallback to user account page
-    $destination = 'destination=user';
-  }
+
   return $destination;
 }
 

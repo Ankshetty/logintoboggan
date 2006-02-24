@@ -272,9 +272,9 @@ function _logintoboggan_register() {
 
       //If password selection is enabled create a %validate_url variable for use in the e-mail.
       if (variable_get('reg_passwd_set', 0) || variable_get('toboggan_immed_login', 0)) {
-        $variables = array('%username' => $account->name, '%site' => variable_get('site_name', 'drupal'), '%password' => $pass, '%uri' => $base_url, '%uri_brief' => substr($base_url, strlen('http://')), '%mailto' => $account->mail, '%date' => format_date(time()), '%login_uri' => url('user', NULL, NULL, TRUE), '%edit_uri' => url('user/'. $account->uid .'/edit', NULL, NULL, TRUE), '%login_url' => logintoboggan_eml_validate_url($account));
+        $variables = array('%username' => $account->name, '%site' => variable_get('site_name', 'drupal'), '%password' => $pass, '%uri' => $base_url, '%uri_brief' => substr($base_url, strlen(_logintoboggan_protocol() .'://')), '%mailto' => $account->mail, '%date' => format_date(time()), '%login_uri' => url('user', NULL, NULL, TRUE), '%edit_uri' => url('user/'. $account->uid .'/edit', NULL, NULL, TRUE), '%login_url' => logintoboggan_eml_validate_url($account));
       } else {
-        $variables = array('%username' => $account->name, '%site' => variable_get('site_name', 'drupal'), '%password' => $pass, '%uri' => $base_url, '%uri_brief' => substr($base_url, strlen('http://')), '%mailto' => $account->mail, '%date' => format_date(time()), '%login_uri' => url('user', NULL, NULL, TRUE), '%edit_uri' => url('user/'. $account->uid .'/edit', NULL, NULL, TRUE), '%login_url' => url('user', NULL, NULL, TRUE));
+        $variables = array('%username' => $account->name, '%site' => variable_get('site_name', 'drupal'), '%password' => $pass, '%uri' => $base_url, '%uri_brief' => substr($base_url, strlen(_logintoboggan_protocol() .'://')), '%mailto' => $account->mail, '%date' => format_date(time()), '%login_uri' => url('user', NULL, NULL, TRUE), '%edit_uri' => url('user/'. $account->uid .'/edit', NULL, NULL, TRUE), '%login_url' => url('user', NULL, NULL, TRUE));
       }
 
       if ($account->status) {
@@ -581,7 +581,7 @@ function logintoboggan_destination() {
   // Drupal has reset $_GET[q], so we need a workaround. Start with home page,
   // then try to determine the correct destination.
   $destination = 'destination=node';
-  $full_path = 'http://'. $_SERVER['SERVER_NAME'] . request_uri();
+  $full_path = _logintoboggan_protocol() .'://'. $_SERVER['SERVER_NAME'] . request_uri();
   if ($internal_path = substr($full_path, strlen($base_url . '/'))) {
     $uriarray = explode('/', $internal_path);
     if (!variable_get('clean_url', 0)) {
@@ -721,7 +721,7 @@ function logintoboggan_resend_validation($uid) {
 
   // Variables to replace in e-mail
   $pass = t('If required, you may reset your password from: %url', array('%url' => url('user/password', NULL, NULL, TRUE)));
-  $variables = array('%username' => $account->name, '%site' => variable_get('site_name', 'drupal'), '%password' => $pass, '%uri' => $base_url, '%uri_brief' => substr($base_url, strlen('http://')), '%mailto' => $account->mail, '%date' => format_date(time()), '%login_uri' => url('user', NULL, NULL, TRUE), '%edit_uri' => url('user/'. $account->uid .'/edit', NULL, NULL, TRUE), '%login_url' => logintoboggan_eml_validate_url($account));
+  $variables = array('%username' => $account->name, '%site' => variable_get('site_name', 'drupal'), '%password' => $pass, '%uri' => $base_url, '%uri_brief' => substr($base_url, strlen(_logintoboggan_protocol() .'://')), '%mailto' => $account->mail, '%date' => format_date(time()), '%login_uri' => url('user', NULL, NULL, TRUE), '%edit_uri' => url('user/'. $account->uid .'/edit', NULL, NULL, TRUE), '%login_url' => logintoboggan_eml_validate_url($account));
 
   // Prepare and send e-mail.
   $from = variable_get('site_mail', ini_get('sendmail_from'));
@@ -732,4 +732,8 @@ function logintoboggan_resend_validation($uid) {
   // Notify user that e-mail was sent and return to user edit form.
   drupal_set_message(t('A validation e-mail has been sent to your e-mail address. You will need to follow the instructions in that message in order to gain full access to the site.'));
   drupal_goto('user/'. $account->uid .'/edit');
+}
+
+function _logintoboggan_protocol() {
+  return (($_SERVER['HTTPS'] == 'on') ? 'https' : 'http'); 
 }

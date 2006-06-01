@@ -674,6 +674,7 @@ function logintoboggan_process_login($account){
   // user has new permissions, so we clear their menu cache
   cache_clear_all('menu:'. $user->uid, TRUE);
 
+  $edit = array();
   user_module_invoke('login', $edit, $user);
 
   drupal_goto('user/'. $user->uid);

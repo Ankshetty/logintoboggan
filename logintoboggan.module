@@ -46,6 +46,7 @@ Drupal ID: %username@%uri_brief
 
 --  %site team');
       $output .= form(form_textarea('', 'foo', $example, 60, 15));
+      $output .= t('<p>Note that if you have set the "Visitors can create accounts but administrator approval is required" option for account approval, and are also allowing users to set their own password, the user will immediately receive the permissions of the pre-authorized user role--you may wish to set the pre-authorized role to "anonymous user" if you wish the newly created user to only have anonymous permissions.</p><p>When a site administrator unblocks a user who is awaiting administrator approval, they must also manually remove the user from the site\'s pre-authorized role and add the "authenticated user" role to the user (if you are using the "Visitors can create accounts and no administrator approval is required" option, this will happen automatically).</p>');
       return $output;
     case 'admin/modules#description':
       return t("Improves Drupal's login system.");
@@ -262,51 +263,48 @@ function _logintoboggan_register() {
         watchdog('security', t('Detected malicious attempt to alter protected user fields.'), WATCHDOG_WARNING);
         drupal_goto('toboggan/register');
       }
-      //If password selection is enabled put the user in the 'validating' role initially until they confirm their e-mail address.
-      if (variable_get('reg_passwd_set', 0) || variable_get('toboggan_immed_login', 0)) {
+
+      $password_immediate = (variable_get('reg_passwd_set', 0) || variable_get('toboggan_immed_login', 0));
+
+      //If password selection is enabled put the user in the 'validating' role initially until they confirm their e-mail address,
+      //create a %validate_url variable for use in the e-mail, and set the user message for the type of account creation.
+      if ($password_immediate) {
       	$account = user_save('', array_merge($edit, array('pass' => $pass, 'init' => $edit['mail'], 'roles' => array(logintoboggan_validating_id()), 'status' => (variable_get('user_register', 1) == 1 ? 1 : 0))));
+
+      	$variables = array('%username' => $account->name, '%site' => variable_get('site_name', 'drupal'), '%password' => $pass, '%uri' => $base_url, '%uri_brief' => $base_path, '%mailto' => $account->mail, '%date' => format_date(time()), '%login_uri' => url('user', NULL, NULL, TRUE), '%edit_uri' => url('user/'. $account->uid .'/edit', NULL, NULL, TRUE), '%login_url' => logintoboggan_eml_validate_url($account));
+
+      	$message = t('A validation e-mail has been sent to your e-mail address. You will need to follow the instructions in that message in order to gain full access to the site.');
+
       } else {
         $account = user_save('', array_merge($edit, array('pass' => $pass, 'init' => $edit['mail'], 'roles' => array(_user_authenticated_id()), 'status' => (variable_get('user_register', 1) == 1 ? 1 : 0))));
-      }
-      watchdog('user', t('New user: %name %email.', array('%name' => theme('placeholder', $edit['name']), '%email' => theme('placeholder', '<'. $edit['mail'] .'>'))), WATCHDOG_NOTICE, l(t('edit'), 'user/'. $account->uid .'/edit'));
 
-      //If password selection is enabled create a %validate_url variable for use in the e-mail.
-      if (variable_get('reg_passwd_set', 0) || variable_get('toboggan_immed_login', 0)) {
-        $variables = array('%username' => $account->name, '%site' => variable_get('site_name', 'drupal'), '%password' => $pass, '%uri' => $base_url, '%uri_brief' => $base_path, '%mailto' => $account->mail, '%date' => format_date(time()), '%login_uri' => url('user', NULL, NULL, TRUE), '%edit_uri' => url('user/'. $account->uid .'/edit', NULL, NULL, TRUE), '%login_url' => logintoboggan_eml_validate_url($account));
-      } else {
         $variables = array('%username' => $account->name, '%site' => variable_get('site_name', 'drupal'), '%password' => $pass, '%uri' => $base_url, '%uri_brief' => $base_path, '%mailto' => $account->mail, '%date' => format_date(time()), '%login_uri' => url('user', NULL, NULL, TRUE), '%edit_uri' => url('user/'. $account->uid .'/edit', NULL, NULL, TRUE), '%login_url' => url('user', NULL, NULL, TRUE));
+
+        $message = t('Your password and further instructions have been sent to your e-mail address.');
       }
+
+      watchdog('user', t('New user: %name %email.', array('%name' => theme('placeholder', $edit['name']), '%email' => theme('placeholder', '<'. $edit['mail'] .'>'))), WATCHDOG_NOTICE, l(t('edit'), 'user/'. $account->uid .'/edit'));
 
       if ($account->status) {
         // Create new user account, no administrator approval required.
         $subject = _user_mail_text('welcome_subject', $variables);
         $body = _user_mail_text('welcome_body', $variables);
         user_mail($edit['mail'], $subject, $body, "From: $from\nReply-to: $from\nX-Mailer: Drupal\nReturn-path: $from\nErrors-to: $from");
-        if(variable_get('reg_passwd_set', 0)){
-          if (variable_get('toboggan_immed_login', 0)){
-            drupal_set_message(t('A validation e-mail has been sent to your e-mail address. You will need to follow the instructions in that message in order to gain full access to the site.'));
-            logintoboggan_process_login($account);
-          }
-          drupal_set_message(t('A validation e-mail has been sent to your e-mail address. You will need to follow the instructions in that message in order to gain full access to the site.'));
-
-          drupal_goto();
-        }
-        else {
-          drupal_set_message(t('Your password and further instructions have been sent to your e-mail address.'));
-
-          drupal_goto();
+        if (variable_get('toboggan_immed_login', 0)){
+          drupal_set_message($message);
+          logintoboggan_process_login($account);
         }
       } else {
         // Create new user account, administrator approval required.
         $subject = _user_mail_text('approval_subject', $variables);
         $body = _user_mail_text('approval_body', $variables);
+        $message = t('Thank you for applying for an account. Your account is currently pending approval by the site administrator.<br />'. $message);
 
         user_mail($edit['mail'], $subject, $body, "From: $from\nReply-to: $from\nX-Mailer: Drupal\nReturn-path: $from\nErrors-to: $from");
         user_mail(variable_get('site_mail', ini_get('sendmail_from')), $subject, t("%u has applied for an account.\n\n%uri", array('%u' => $account->name, '%uri' => url("user/$account->uid/edit", NULL, NULL, TRUE))), "From: $from\nReply-to: $from\nX-Mailer: Drupal\nReturn-path: $from\nErrors-to: $from");
-        drupal_set_message(t('Thank you for applying for an account. Your account is currently pending approval by the site administrator.<br />In the meantime, your password and further instructions have been sent to your e-mail address.'));
-
-        drupal_goto();
       }
+      drupal_set_message($message);
+      drupal_goto();
     }
   }
 
@@ -635,7 +633,7 @@ function logintoboggan_validate_email($uid, $timestamp, $hashed_pass) {
   global $user;
   $current = time();
   // Some redundant checks for extra security
-  if ($timestamp < $current && is_numeric($uid) && $account = user_load(array('uid' => $uid, 'status' => 1)) ) {
+  if ($timestamp < $current && is_numeric($uid) && $account = user_load(array('uid' => $uid)) ) {
     // No time out for first time login.
     if ($account->uid && !empty($account) && $timestamp < $current &&
         $hashed_pass == logintoboggan_eml_rehash($account->pass, $timestamp, $account->mail)) {
@@ -643,12 +641,20 @@ function logintoboggan_validate_email($uid, $timestamp, $hashed_pass) {
       // Update the user table noting user has logged in.
       // And this also makes this hashed password a one-time-only login.
       db_query("UPDATE {users} SET changed = '%d' WHERE uid = '%s'", time(), $user->uid);
-      db_query("UPDATE {users_roles} SET rid ='%d' WHERE uid = %d AND rid = %d", _user_authenticated_id(), $account->uid, logintoboggan_validating_id());
+
+      // Move the user into the auth role, unless they haven't been approved yet.
+      if ($account->status) {
+        db_query("UPDATE {users_roles} SET rid ='%d' WHERE uid = %d AND rid = %d", _user_authenticated_id(), $account->uid, logintoboggan_validating_id());
+      }
 
       // Now we can set the new user.
       $user = $account;
+
+      // If neccessary, alert the user that they still don't have full perms because they are awaiting approval.
+      $awaiting_approval = $account->status ? '' : t(' You will receive full site permissions after your account has been approved by a site administrator.');
+
       // And proceed with normal login, going to user page.
-      drupal_set_message(t("You have successfully validated your e-mail address."));
+      drupal_set_message(t('You have successfully validated your e-mail address.'. $awaiting_approval));
       logintoboggan_process_login($user);
     }
   }

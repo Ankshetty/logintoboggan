@@ -87,16 +87,43 @@ function logintoboggan_menu($may_cache) {
 
   }
   else {
-    if (variable_get('toboggan_hijack', 1)) {
-      if ($user->uid == 0){
-        if (arg(0) == 'user' && !arg(1)){
-          drupal_goto('toboggan/login');
+
+    //determine if we need to hijack the menu path--we do it if it's an anon user trying
+    //to get to any of the user login/register/password pages.
+    if (variable_get('toboggan_hijack', 1) && $user->uid == 0) {
+      $arg1 = arg(1);
+      if (arg(0) == 'user' && (!$arg1 || $arg1 == 'register' || $arg1 == 'password')) {
+
+        //since we're hijacking here, we need to perform some magic on any $_GET query strings
+        //so they're not lost.
+        if (is_array($_GET) && count($_GET)) {
+          $query = array();
+          foreach ($_GET as $key => $value) {
+            if ($key != 'q') {
+          	  $query_pieces[] = "$key=$value";
+            }
+          }
+          if (count($query_pieces)) {
+            $query = implode('&', $query_pieces);
+          } else {
+            $query = NULL;
+          }
+        } else {
+          $query = NULL;
         }
-        elseif (arg(0) == 'user' && arg(1) == 'register'){
-          drupal_goto('toboggan/register');
-        }
-        elseif (arg(0) == 'user' && arg(1) == 'password'){
-          drupal_goto('toboggan/password');
+
+        //unsetting destination here, so drupal_goto will work properly--otherwise it might create an infinite loop.
+        unset($_REQUEST['destination']);
+        unset($_REQUEST['edit']['destination']);
+
+        //redirect to the toboggan counterpart.
+        switch ($arg1) {
+          case 'register':
+            drupal_goto('toboggan/register', $query);
+          case 'password':
+            drupal_goto('toboggan/password', $query);
+          default:
+            drupal_goto('toboggan/login', $query);
         }
       }
     }

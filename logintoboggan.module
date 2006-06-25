@@ -325,7 +325,7 @@ function _logintoboggan_register() {
         // Create new user account, administrator approval required.
         $subject = _user_mail_text('approval_subject', $variables);
         $body = _user_mail_text('approval_body', $variables);
-        $message = t('Thank you for applying for an account. Your account is currently pending approval by the site administrator.<br />'. $message);
+        $message = t('Thank you for applying for an account. Your account is currently pending approval by the site administrator.') .'<br />'. $message;
 
         user_mail($edit['mail'], $subject, $body, "From: $from\nReply-to: $from\nX-Mailer: Drupal\nReturn-path: $from\nErrors-to: $from");
         user_mail(variable_get('site_mail', ini_get('sendmail_from')), $subject, t("%u has applied for an account.\n\n%uri", array('%u' => $account->name, '%uri' => url("user/$account->uid/edit", NULL, NULL, TRUE))), "From: $from\nReply-to: $from\nX-Mailer: Drupal\nReturn-path: $from\nErrors-to: $from");

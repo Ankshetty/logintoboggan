@@ -95,32 +95,6 @@ function logintoboggan_form_alter($form_id, &$form) {
   global $form_values;
   switch ($form_id) {
 
-/*    This will be used later when the conversion to the user login block is complete
-    case 'block_admin_configure':
-      if (($form['module']['#value'] == 'user') && ($form['delta']['#value'] == 0)) {
-        $form['#submit'] += array('logintoboggan_user_block_admin_configure_submit' => array($form_id, &$form_values));
-        $form['block_settings'] = array(
-          '#type' => 'fieldset',
-          '#title' => t('Block specific settings'),
-          '#collapsible' => true,
-          '#weight' => 0,
-        );
-        $form['block_settings']['toboggan_display_logged_in'] = array('#type' => 'checkbox',
-          '#title' => t('Display the \'logged in\' block'),
-          '#default_value' => variable_get('toboggan_display_logged_in', 1),
-          );
-        $form['toboggan_block_type'] = array('#type' => 'radios',
-          '#title' => t('Block type'),
-          '#default_value' => variable_get('toboggan_block_type', 1),
-          '#options' => array(t('Link'), t('Collapsible Form')),
-          );
-        $form['block_settings']['toboggan_block_msg'] = array('#type' => 'textarea',
-          '#title' => t('Set a custom message to appear at the top of your login block'),
-          '#default_value' => variable_get('toboggan_block_msg', ''),
-          );
-      }
-      break;*/
-
     // This will reset the the site 403 variable to the default if the module is disabled and the toboggan redirect on acccess
     // denied is enabled.
     case 'system_modules':
@@ -421,18 +395,6 @@ function logintoboggan_menu($may_cache) {
   }
   return $items;
 }
-
-/**
- * @defgroup logintoboggan_block Functions for LoginToboggan blocks.
- */
-
-/* This will be used later when the conversion to using the user login block is complete
-function logintoboggan_user_block_admin_configure_submit($form_id, $form_values) {
-  toboggan_block_msg
-  variable_set('toboggan_block_type', $form_values['toboggan_block_type']);
-  variable_set('toboggan_display_logged_in', $form_values['toboggan_display_logged_in']);
-  variable_set('toboggan_block_msg', $form_values['toboggan_block_msg']);
-}*/
 
 /**
  * Implementation of hook_block

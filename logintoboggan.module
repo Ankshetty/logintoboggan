@@ -263,7 +263,6 @@ function _logintoboggan_register() {
     $q = $_GET['q'];
     $_GET['q'] = 'user/register';
     user_module_invoke('validate', $edit, $edit, 'account');
-    $_GET['q'] = $q;
 
     if (!form_get_errors()) {
       //unset the confirmation variables because we don't care anymore and we don't want them stored
@@ -331,6 +330,7 @@ function _logintoboggan_register() {
         user_mail(variable_get('site_mail', ini_get('sendmail_from')), $subject, t("%u has applied for an account.\n\n%uri", array('%u' => $account->name, '%uri' => url("user/$account->uid/edit", NULL, NULL, TRUE))), "From: $from\nReply-to: $from\nX-Mailer: Drupal\nReturn-path: $from\nErrors-to: $from");
       }
       drupal_set_message($message);
+      $_GET['q'] = $q;  // Restore original q.
       drupal_goto();
     }
   }

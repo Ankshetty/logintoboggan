@@ -122,7 +122,7 @@ function logintoboggan_form_alter($form_id, &$form) {
         $form['pass']['#attributes'] = array('tabindex' => '2');
         $form['submit']['#attributes'] = array('tabindex' => '3');
         if (variable_get('drupal_authentication_service', FALSE) && count(user_auth_help_links()) > 0) {
-          $form['name']['#description'] = t('Enter your %s username, e-mail address, or an ID from one of our affiliates: %a.', array('%s' => variable_get('site_name', 'local'), '%a' => implode(', ', user_auth_help_links())));
+          $form['name']['#description'] = t('Enter your %s username, e-mail address, or an ID from one of our affiliates: %a.', array('%s' => theme('placeholder', variable_get('site_name', 'local')), '%a' => implode(', ', user_auth_help_links())));
         }
         if($GLOBALS['logintoboggan_denied'] == TRUE){
           $form['#redirect'] = logintoboggan_destination();
@@ -298,7 +298,7 @@ function logintoboggan_user_login_validate($form_id, $form_values) {
 
       if (!$user->uid) {
         form_set_error('login', t('Sorry. Unrecognized username or password.') .' '. l(t('Have you forgotten your password?'), 'user/password'));
-        watchdog('user', t('Login attempt failed for %user: %error.', array('%user' => theme('placeholder', $form_values['name']), '%error' => theme('placeholder', $error))));
+        watchdog('user', t('Login attempt failed for %user.', array('%user' => theme('placeholder', $form_values['name']))));
         drupal_goto('user/login');
       }
     }
@@ -545,7 +545,7 @@ function logintoboggan_settings() {
     '#title' => t('Allow user to set their password during registration'),
     '#default_value' => variable_get('reg_passwd_set', 0),
     '#options' => array(t('Disabled'), t('Set password & Immediate login')),
-    '#description' => t('This will allow users to choose their initial password when registering.  If \'Set password & Immediate login\' is selected, users will be assigned to the role below and logged in immediately. They will not be assigned to the "authenticated user" role until they confirm their e-mail address by following the link in their registration e-mail. It is HIGHLY recommended that you set up a "pre-authorized" role with limited permissions for this purpose. <br />NOTE: If you enable either of this feature, you should edit the %settings--more help in writing the e-mail message can be found %help.', array('%settings' => l('user e-mail welcome message', 'admin/settings/user'), '%help' => l('logintoboggan help', 'admin/help/logintoboggan'))),
+    '#description' => t('This will allow users to choose their initial password when registering.  If \'Set password & Immediate login\' is selected, users will be assigned to the role below and logged in immediately. They will not be assigned to the "authenticated user" role until they confirm their e-mail address by following the link in their registration e-mail. It is HIGHLY recommended that you set up a "pre-authorized" role with limited permissions for this purpose. <br />NOTE: If you enable either of this feature, you should edit the %settings--more help in writing the e-mail message can be found at %help.', array('%settings' => l('user e-mail welcome message', 'admin/settings/user'), '%help' => l('logintoboggan help', 'admin/help/logintoboggan'))),
     );
 
   // Grab the roles that can be used for pre-auth.  Remove the anon role, as it's not a valid choice.
@@ -555,7 +555,7 @@ function logintoboggan_settings() {
     '#title' => t('Non-authenticated role'),
     '#options' => $roles,
     '#default_value' => variable_get('toboggan_role', 2),
-    '#description' => t('If "Set password & Immediate login" is selected, users will be able to login before their e-mail address has been authenticated. Therefore, you must choose a role for new non-authenticated users. Users will be removed from this role and assigned to the "authenticated user" once they follow the link in their welcome e-mail. Add new roles <a href="%url">here</a>.', array('%url' => url('admin/access/roles'))),
+    '#description' => t('If "Set password & Immediate login" is selected, users will be able to login before their e-mail address has been authenticated. Therefore, you must choose a role for new non-authenticated users. Users will be removed from this role and assigned to the "authenticated user" once they follow the link in their welcome e-mail. <a href="%url">Add new roles</a>.', array('%url' => url('admin/access/roles'))),
     );
 
   $form['registration']['redirect'] = array(
@@ -723,7 +723,7 @@ function logintoboggan_validate_email($uid, $timestamp, $hashed_pass) {
     // No time out for first time login.
     if ($account->uid && !empty($account) && $timestamp < $current &&
         $hashed_pass == logintoboggan_eml_rehash($account->pass, $timestamp, $account->mail)) {
-      watchdog('user', t('E-mail validation URL used for %name with timestamp %timestamp.', array('%name' => "<em>$account->name</em>", '%timestamp' => $timestamp)));
+      watchdog('user', t('E-mail validation URL used for %name with timestamp %timestamp.', array('%name' => theme('placeholder', $account->name), '%timestamp' => check_plain($timestamp))));
       // Update the user table noting user has logged in.
       // And this also makes this hashed password a one-time-only login.
       db_query("UPDATE {users} SET login = '%d' WHERE uid = %d", time(), $account->uid);

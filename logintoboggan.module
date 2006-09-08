@@ -223,7 +223,9 @@ function logintoboggan_user_register_submit($form_id, $form_values) {
   $validating_id = logintoboggan_validating_id();
   $roles = ($reg_pass_set && ($validating_id > 2)) ? array($validating_id) : array();
 
-  $account = user_save('', array_merge($form_values, array('pass' => $pass, 'init' => $mail, 'roles' => $roles, 'status' => variable_get('user_register', 1) == 1)));
+  // Since logintoboggan automatically revokes auth privs from users with the temp role, always set status to 1,
+  // So users waiting for admin approval can have temp role perms.
+  $account = user_save('', array_merge($form_values, array('pass' => $pass, 'init' => $mail, 'roles' => $roles, 'status' => 1)));
 
   watchdog('user', t('New user: %name %email.', array('%name' => theme('placeholder', $name), '%email' => theme('placeholder', '<'. $mail .'>'))), WATCHDOG_NOTICE, l(t('edit'), 'user/'. $account->uid .'/edit'));
 

@@ -232,8 +232,8 @@ function logintoboggan_user_register_submit($form_id, $form_values) {
   $login_url = ($reg_pass_set && variable_get('user_register', 1) == 1) ? logintoboggan_eml_validate_url($account) : user_pass_reset_url($account);
   $variables = array('%username' => $name, '%site' => variable_get('site_name', 'drupal'), '%password' => $pass, '%uri' => $base_url, '%uri_brief' => substr($base_url, strlen(_logintoboggan_protocol() .'://')), '%mailto' => $mail, '%date' => format_date(time()), '%login_uri' => url('user', NULL, NULL, TRUE), '%edit_uri' => url('user/'. $account->uid .'/edit', NULL, NULL, TRUE), '%login_url' => $login_url);
 
-  //compose the appropriate user message
-  if(variable_get('reg_passwd_set', 0)) {
+  //compose the appropriate user message--admin approvals don't require a validation email
+  if(variable_get('reg_passwd_set', 0) && variable_get('user_register', 1) == 1) {
     $message = t('A validation e-mail has been sent to your e-mail address. In order to gain full access to the site, you will need to follow the instructions in that message.');
 
   } else {

@@ -240,13 +240,13 @@ function logintoboggan_user_register_submit($form_id, $form_values) {
     $message = t('Your password and further instructions have been sent to your e-mail address.');
   }
 
-  if ($account->status) {
+  if (variable_get('user_register', 1) == 1) {
 
     // Create new user account, no administrator approval required.
     $subject = _user_mail_text('welcome_subject', $variables);
     $body = _user_mail_text('welcome_body', $variables);
 
-  } else {
+  } elseif (variable_get('user_register', 1) == 2) {
 
     // Create new user account, administrator approval required.
     $subject = _user_mail_text('approval_subject', $variables);

@@ -157,11 +157,13 @@ function logintoboggan_form_alter($form_id, &$form) {
 
         //Display a password and password confirm box if users can select their own passwords.
         if ($pass) {
+          $min_pass = variable_get('toboggan_min_pass_length', 0);
+          $length = $min_pass ? t('between %min and', array('%min' => $min_pass)) : t('no more than');
           $form['pass'] = array('#type' => 'password',
             '#title' => t('Password'),
             '#size' => 30,
             '#maxlength' => 30,
-            '#description' => t('Please choose a password for your account; it must be between 6 and 30 characters and spaces are not allowed.'),
+            '#description' => t('Please choose a password for your account; it must be %length 30 characters and spaces are not allowed.', array('%length' => $length)),
             '#required' => TRUE,
             );
           $form['conf_pass'] = array('#type' => 'password',

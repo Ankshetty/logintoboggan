@@ -71,7 +71,7 @@ function logintoboggan_menu($may_cache) {
 
     //local tab for registration form
     $items[] = array('path' => 'toboggan/register', 'title' => t('register'), 'callback' => '_logintoboggan_register',
-      'access' => TRUE, 'type' => MENU_LOCAL_TASK, 'weight' => 2);
+      'access' => $user->uid == 0 && variable_get('user_register', 1), 'type' => MENU_LOCAL_TASK, 'weight' => 2);
 
     //local tab for password request form
     $items[] = array('path' => 'toboggan/password', 'title' => t('request new password'), 'callback' =>

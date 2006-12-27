@@ -230,7 +230,7 @@ function logintoboggan_user_register_submit($form_id, $form_values) {
   $reg_pass_set = !variable_get('user_email_verification', TRUE);
 
   // If we are allowing user selected passwords then skip the auto-generate function
-  // The new user's status should default to the site settings, unless reg_passwd_set == 1 
+  // The new user's status should default to the site settings, unless reg_passwd_set == 1
   // (immediate login, we are going to assign a pre-auth role), and we want to allow
   // admin approval accounts access to the site.
   if ($reg_pass_set) {
@@ -239,7 +239,7 @@ function logintoboggan_user_register_submit($form_id, $form_values) {
   }
   else {
     $pass = user_password();
-    $status = variable_get('user_register', 1) == 1; 
+    $status = variable_get('user_register', 1) == 1;
   }
 
   // Must unset mail confirmation to prevent it from being saved in the user table's 'data' field.
@@ -516,29 +516,35 @@ function theme_lt_loggedinblock(){
 
 function _logintoboggan_toggleboggan ($form) {
 
+  drupal_add_js(_logintoboggan_toggleboggan_js(), 'inline');
+
   $pre = '<div id="toboggan-container" class="toboggan-container">';
   $pre .= '<div class="toboggan-login-link">';
-  $pre .= l(t('Login/Register'), 'user/login', array('onclick' => "toggleboggan('toboggan-login');this.blur();return false;"));
+  $pre .= l(t('Login/Register'), 'user/login', array('onclick' => "toggleboggan();this.blur();return false;"));
   $pre .= '</div>';
 
   //the block that will be toggled
   $pre .= '<div id="toboggan-login" class="user-login-block">';
+
   $form['pre'] = array('#value' => $pre, '#weight' => -300);
-
-  $post .= '</div></div>';
-
-  //javascript toggle function
-  $post .= '<script type="text/javascript">';
-  // <![CDATA[
-  $post .= 'function toggleboggan($id) {';
-  $post .= '$obj = document.getElementById($id);';
-  $post .= '$obj.style.display = ($obj.style.display == \'none\') ? \'block\' : \'none\';}';
-  // for compatibility with non-js browsers:
-  $post .= 'document.getElementById(\'toboggan-login\').style.display = \'none\';';
-  // ]]>
-  $post .= '</script>';
-  $form['post'] = array('#value' => $post, '#weight' => 300);
+  $form['post'] = array('#value' => '</div></div>', '#weight' => 300);
   return $form;
+}
+
+function _logintoboggan_toggleboggan_js() {
+  return '
+  $(function() {
+      if (Drupal.jsEnabled) {
+        $("#toboggan-login").hide();
+      }
+    }
+  );
+  function toggleboggan() {
+    if (Drupal.jsEnabled) {
+      $("#toboggan-login").toggle();
+    }
+  }
+  ';
 }
 
 function logintoboggan_main_settings() {
@@ -766,7 +772,7 @@ function logintoboggan_validate_email($uid, $timestamp, $hashed_pass, $action = 
           }
           else {
             drupal_goto(logintoboggan_process_login($account, $redirect));
-          }     
+          }
           break;
         // Admin validation.
         case 'admin':
@@ -892,9 +898,9 @@ function _logintoboggan_protocol() {
 function _logintoboggan_process_redirect($redirect, $account) {
   $variables = array('%uid' => $account->uid);
   $redirect = strtr($redirect, $variables);
-  
+
   return $redirect;
-} 
+}
 
 /**
  * Flips the value of the user_email_settings variable.  This setting is less confusing when it works the opposite

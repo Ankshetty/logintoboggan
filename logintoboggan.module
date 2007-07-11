@@ -144,7 +144,7 @@ function logintoboggan_form_alter($form_id, &$form) {
     case 'user_login_block':
       //Grab the message from settings if there is one to display at the top of the login block.
       if ($login_msg = variable_get('toboggan_block_msg', '')) {
-        $form['message'] = array('#value' => $login_msg,
+        $form['message'] = array('#value' => filter_xss_admin($login_msg),
                              '#weight' => -50,
                            );
       }
@@ -501,7 +501,7 @@ function logintoboggan_block($op = 'list', $delta = 0, $edit = array()) {
 
 function theme_lt_loggedinblock(){
   global $user;
-  return $user->name .' | ' . l(t('Log out'), 'logout');
+  return check_plain($user->name) .' | ' . l(t('Log out'), 'logout');
 }
 
 /**

@@ -307,7 +307,6 @@ function logintoboggan_user_login_validate($form_id, $form_values) {
       if (!$user->uid) {
         form_set_error('login', t('Sorry. Unrecognized username or password.') .' '. l(t('Have you forgotten your password?'), 'user/password'));
         watchdog('user', t('Login attempt failed for %user.', array('%user' => theme('placeholder', $form_values['name']))));
-        drupal_goto('user/login');
       }
     }
   }

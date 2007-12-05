@@ -104,7 +104,8 @@ function logintoboggan_form_alter($form_id, &$form) {
         $form['block_settings']['toboggan_block_type'] = array('#type' => 'radios',
           '#title' => t('Block type'),
           '#default_value' => variable_get('toboggan_block_type', 1),
-          '#options' => array(t('Standard'), t('Link'), t('Collapsible Form')),
+          '#options' => array(t('Standard'), t('Link'), t('Collapsible form')),
+          '#description' => t("'Standard' is a standard login block, 'Link' is a login link that returns the user to the original page after logging in, 'Collapsible form' is a javascript collaspible login form."),
         );
 
         $form['block_settings']['toboggan_block_msg'] = array('#type' => 'textarea',

@@ -202,6 +202,9 @@ function logintoboggan_form_alter($form_id, &$form) {
 
         //Display a confirm e-mail address box if option is enabled.
         if ($mail) {
+          // Make sure user help is at the top of the form.
+          $form['user_registration_help']['#weight'] = -100;
+
           $form['conf_mail'] = array('#type' => 'textfield',
             '#title' => t('Confirm e-mail address'),
             '#weight' => -28,
@@ -213,7 +216,6 @@ function logintoboggan_form_alter($form_id, &$form) {
           // Weight things properly so that the order is name, mail, conf_mail, then pass
           if (isset($form['account'])) {
             $form['account']['#weight'] = -50;  // Make sure account form group is at the top of the display.
-            $form['account']['user_registration_help']['#weight'] = -40;
             $form['account']['name']['#weight'] = -30;
             $form['account']['mail']['#weight'] = -29;
             $form['account']['conf_mail'] = $form['conf_mail'];
@@ -221,7 +223,6 @@ function logintoboggan_form_alter($form_id, &$form) {
             $form['account']['conf_mail']['#weight'] = -28;
           }
           else {
-            $form['user_registration_help']['#weight'] = -40;
             $form['name']['#weight'] = -30;
             $form['mail']['#weight'] = -29;
           }

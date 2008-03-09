@@ -122,12 +122,8 @@ function logintoboggan_form_alter($form_id, &$form) {
       }
       break;
 
-    // This will reset the the site 403 variable to the default if the module is
-    // disabled and the toboggan redirect on access denied is enabled.
     case 'system_modules':
-      if ($_POST && !$_POST['status']['logintoboggan'] && (db_result(db_query("SELECT status FROM {system} WHERE name = 'logintoboggan'")) == 1) && (variable_get('site_403', '') == 'toboggan/denied')) {
-        variable_set('site_403', '');
-      }
+      $form['#validate']['logintoboggan_site_403_validate'] = array();
       break;
 
     case 'logintoboggan_main_settings':
@@ -962,6 +958,21 @@ function _logintoboggan_process_redirect($redirect, $account) {
   $redirect = strtr($redirect, $variables);
 
   return $redirect;
+}
+
+/**
+ * Resets the the site 403 variable to the default if the module is disabled
+ * and the toboggan redirect on access denied is enabled.
+ */
+function logintoboggan_site_403_validate($form_id, $form_values) {
+  // The check order is important:
+  //   1. Is the module disabled?  Skip if so.
+  //   2. Has the module been selected to be disabled?
+  //   3. Is the current site 403 toboggan/denied?
+  // Only reset the site 403 variable if 2 and 3 are true.
+  if (!isset($form_values['disabled_modules']['logintoboggan']) && !$form_values['status']['logintoboggan'] && (variable_get('site_403', '') == 'toboggan/denied')) {
+    variable_set('site_403', '');
+  }
 }
 
 /**

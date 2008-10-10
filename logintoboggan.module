@@ -77,7 +77,10 @@ For full site access, you will need to click on this link or copy and paste it i
 
 !login_url
 
-This will verify your account and log you into the site. In the future you will be able to log in using the username and password that you created during registration.
+This will verify your account and log you into the site. In the future you will be able to log in to !login_uri using the username and password that you created during registration:
+
+username: !username
+password: !password
 
 Your new !site membership also enables to you to login to other Drupal powered websites (e.g. http://www.drupal.org/) without registering. Just use the following Drupal ID along with the password you\'ve chosen:
 

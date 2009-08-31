@@ -185,8 +185,9 @@ function logintoboggan_form_alter($form_id, &$form) {
       break;
 
     case 'user_register':
-      // Admin created account aren't processed by the module.
+      // Admin created accounts are only validated by the module.
       if (user_access('administer users')) {
+        $form['#validate'] += array('logintoboggan_user_register_validate' => array());
         break;
       }
       $mail = variable_get('email_reg_confirm', 0);
@@ -367,7 +368,7 @@ function logintoboggan_user_login_validate($form_id, $form_values, $form) {
  */
 function logintoboggan_user_register_validate($form_id, $form_values) {
   //Check to see whether our e-mail address matches the confirm address if enabled.
-  if (variable_get('email_reg_confirm', 0)) {
+  if (!user_access('administer users') && variable_get('email_reg_confirm', 0)) {
     if ($form_values['mail'] != $form_values['conf_mail']) {
       form_set_error('conf_mail', t('Your e-mail address and confirmed e-mail address must match.'));
     }

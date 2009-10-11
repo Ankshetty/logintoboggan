@@ -301,7 +301,8 @@ function logintoboggan_user_register_submit($form_id, $form_values) {
     $roles[$validating_id] = 1;
   }
 
-  $account = user_save('', array_merge($form_values, array('pass' => $pass, 'init' => $mail, 'roles' => $roles, 'status' => $status)));
+  $edit = array_merge($form_values, array('pass' => $pass, 'init' => $mail, 'roles' => $roles, 'status' => $status));
+  $account = user_save('', $edit);
 
   watchdog('user', t('New user: %name %email.', array('%name' => $name, '%email' => "<$mail>")), WATCHDOG_NOTICE, l(t('edit'), 'user/'. $account->uid .'/edit'));
 
@@ -357,7 +358,7 @@ function logintoboggan_user_register_submit($form_id, $form_values) {
 
   //log the user in if they created the account and immediate login is enabled.
   if($reg_pass_set) {
-    return logintoboggan_process_login($account, $redirect);
+    return logintoboggan_process_login($account, $edit, $redirect);
   }
 
   //redirect to the appropriate page.
@@ -821,7 +822,8 @@ function logintoboggan_validate_email($uid, $timestamp, $hashed_pass, $action = 
             drupal_goto('');
           }
           else {
-            drupal_goto(logintoboggan_process_login($account, $redirect));
+            $edit = array();
+            drupal_goto(logintoboggan_process_login($account, $edit, $redirect));
           }
           break;
         // Admin validation.
@@ -882,9 +884,16 @@ function _logintoboggan_process_validation($account) {
  * Actually log the user on
  *
  * @param object $account
+ *   The user object.
+ * @param array $edit
+ *   An array of form values if a form has been submitted.
+ * @param string $redirect
+ *   A string describing a redirect location, in the form
+ *   that drupal_goto() will understand. Defaults to:
+ *     'user/'. $user->uid
  */
 
-function logintoboggan_process_login($account, $redirect = ''){
+function logintoboggan_process_login($account, $edit, $redirect = ''){
   global $user;
   $user = $account;
 
@@ -896,7 +905,6 @@ function logintoboggan_process_login($account, $redirect = ''){
   // user has new permissions, so we clear their menu cache
   cache_clear_all($user->uid .':', 'cache_menu', TRUE);
 
-  $edit = array();
   user_module_invoke('login', $edit, $user);
 
   // In the special case where a user is validating but they did not create their

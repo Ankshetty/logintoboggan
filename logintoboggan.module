@@ -904,7 +904,7 @@ function logintoboggan_process_login($account, $redirect = ''){
   // of the confirmation page, if it exists.
   if (variable_get('user_email_verification', TRUE)) {
     watchdog('user', t('User %name used one-time login link at time %timestamp.', array('%name' => $user->name, '%timestamp' => time())));
-    drupal_set_message(t('You have just used your one-time login link. It is no longer necessary to use this link to login. Please change your password.'));
+    drupal_set_message(t('You have just used your one-time login link. It is no longer possible to use this link to login. Please change your password.'));
 
     $destination = $redirect ? "destination=$redirect" : NULL;
     drupal_goto('user/'. $user->uid .'/edit', $destination);

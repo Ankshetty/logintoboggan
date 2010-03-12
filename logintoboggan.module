@@ -580,14 +580,12 @@ function _logintoboggan_toggleboggan_js() {
 }
 
 function logintoboggan_main_settings() {
-  $version .= str_replace(array('$Re'.'vision:', '$Da'.'te:', '$'), array('', '', ''), '<p style="font-size:x-small">Login Toboggan version: <b>$Revision$</b>, $Date$</p>');
 
   $_disabled = t('disabled');
   $_enabled = t('enabled');
 
   $form['login'] = array('#type' => 'fieldset',
     '#title' => t('Login'),
-    '#prefix' => $version,
     );
 
   $form['login']['login_with_mail'] = array('#type' => 'radios',

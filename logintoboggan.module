@@ -781,6 +781,7 @@ function logintoboggan_validating_id() {
  * and redirects to the user page on success.
  */
 function logintoboggan_validate_email($uid, $timestamp, $hashed_pass, $action = 'login') {
+  global $user;
 
   $current = time();
   $uid = (int) $uid;
@@ -840,7 +841,17 @@ function logintoboggan_validate_email($uid, $timestamp, $hashed_pass, $action = 
       }
     }
     else {
-      drupal_set_message(t("Sorry, you can only use your validation link once for security reasons. Please !login with your username and password instead now.", array('!login' => l(t('login'),'user/login'))),'error');
+      $message = t("Sorry, you can only use your validation link once for security reasons.");
+      // No one currently logged in, go straight to user login page.
+      if (empty($user->uid)) {
+        $message .= t(" Please log in with your username and password instead now.");
+        $goto = 'user/login';
+      }
+      else {
+        $goto = 'user';
+      }
+      drupal_set_message($message, 'error');
+      drupal_goto($goto);
     }
   }
 

@@ -136,15 +136,25 @@ function logintoboggan_form_alter($form_id, &$form) {
       break;
     case 'user_edit':
       $form['#validate'] += array('logintoboggan_user_edit_validate' => array());
-      $user = user_load(array('uid' => arg(1)));
+      $account = user_load(array('uid' => arg(1)));
       $id = logintoboggan_validating_id();
-      $in_pre_auth_role = in_array($id, array_keys($user->roles));
-      // Messages aren't necessary if pre-auth role is authenticated user.
-      if ($in_pre_auth_role && $id != DRUPAL_AUTHENTICATED_RID) {
-        if ((variable_get('user_register', 1) == 2)) {
-          $form['account']['status']['#description'] = t('If this user was created using the "Immediate Login" feature of LoginToboggan, and they are also awaiting adminstrator approval on their account, you must remove them from the site\'s pre-authorized role in the "Roles" section below, or they will not receive authenticated user permissions!');
+      $pre_auth = !variable_get('user_email_verification', TRUE) && $id != DRUPAL_AUTHENTICATED_RID;
+      $in_pre_auth_role = in_array($id, array_keys($account->roles));
+      // Messages are only necessary for user admins, and aren't necessary if
+      // there's no valid pre-auth role.
+      if (user_access('administer users') && isset($form['account']['roles']) && $pre_auth) {
+        // User is still in the pre-auth role, so let the admin know.
+        if ($in_pre_auth_role) {
+          if ((variable_get('user_register', 1) == 2)) {
+            $form['account']['status']['#description'] = t('If this user was created using the "Immediate Login" feature of LoginToboggan, and they are also awaiting adminstrator approval on their account, you must remove them from the site\'s pre-authorized role in the "Roles" section below, or they will not receive authenticated user permissions!');
+          }
+          $form['account']['roles']['#description'] = t("The user is assigned LoginToboggan's pre-authorized role, and is not currently receiving authenticated user permissions.");
         }
-        $form['account']['roles']['#description'] = t("The user is assigned LoginToboggan's pre-authorized role, and is not currently receiving authenticated user permissions.");
+        // User is no longer in the pre-auth role, so remove the option to add
+        // them back.
+        else {
+          unset($form['account']['roles']['#options'][$id]);
+        }
       }
       break;
 
@@ -236,6 +246,18 @@ function logintoboggan_form_alter($form_id, &$form) {
         }
       }
       break;
+
+    // Unset the ability to add the pre-auth role in the user admin interface.
+    case 'user_admin_account':
+      // Test here for a valid pre-auth -- we only remove this role if one exists.
+      $id = logintoboggan_validating_id();
+      $pre_auth = !variable_get('user_email_verification', TRUE) && $id != DRUPAL_AUTHENTICATED_RID;
+      $add = t('Add a role to the selected users');
+      if ($pre_auth && isset($form['options']['operation']['#options'][$add]["add_role-$id"])) {
+        unset($form['options']['operation']['#options'][$add]["add_role-$id"]);
+      }
+      break;
+
     // Password resets count as validating an email address, so remove the user
     // from the pre-auth role if they are still in it.
     case 'user_pass_reset':

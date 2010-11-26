@@ -242,7 +242,13 @@ function logintoboggan_form_alter($form_id, &$form) {
         if ($pass) {
           $min_pass = variable_get('toboggan_min_pass_length', 0);
           $length = $min_pass ? t('between !min and', array('!min' => $min_pass)) : t('no more than');
-          $form['pass']['#description'] = t('Please choose a password for your account; it must be !length 30 characters.', array('!length' => $length));
+          $description = t('Please choose a password for your account; it must be !length 30 characters.', array('!length' => $length));
+          if (isset($form['account'])) {
+            $form['account']['pass']['#description'] = $description;
+          }
+          else {
+            $form['pass']['#description'] = $description;
+          }
         }
       }
       break;

@@ -1,6 +1,5 @@
 <?php
 
-// $Id$
 
 /**
  * @defgroup logintoboggan_core Core drupal hooks

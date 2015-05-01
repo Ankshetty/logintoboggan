@@ -1,5 +1,6 @@
-7.x-1.5, 2015-04-13
+7.x-1.5, 2015-05-01
 -------------------
+- Added CHANGELOG.txt.
 - Various one-time-login and validation links don't work with Drupal 6.35 and Drupal 7.35.
 - Trimming email input of any stray space characters.
 - Merge branch '7.x-1.x' of git.drupal.org:project/logintoboggan into 7.x-1.x.

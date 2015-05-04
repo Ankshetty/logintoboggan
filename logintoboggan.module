@@ -893,6 +893,17 @@ function _logintoboggan_toggleboggan ($form) {
  */
 function logintoboggan_unified_login_form($active_form = 'login') {
   $login_form = drupal_get_form('user_login');
+  $register_form = drupal_get_form('user_register_form');
+
+  // Override the default form tab if the user has been sent to the page via a
+  // failed log-in or registration attempt.
+  if (!empty($register_form['#validated'])) {
+    $active_form = 'register';
+  }
+  else if (!empty($login_form['#validated'])) {
+    $active_form = 'login';
+  }
+
   $login_form['#attached']['js'][] = drupal_get_path('module', 'logintoboggan') .'/logintoboggan.unifiedlogin.js';
   $login_form['#attached']['js'][] = array(
     'data' => array(
@@ -902,7 +913,7 @@ function logintoboggan_unified_login_form($active_form = 'login') {
     ),
     'type' => 'setting',
   );
-  $register_form = drupal_get_form('user_register_form');
+
   $rendered_login_form = drupal_render($login_form);
   $rendered_register_form = drupal_render($register_form);
   $variables = array(

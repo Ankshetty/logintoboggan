@@ -1130,22 +1130,18 @@ function _logintoboggan_protocol() {
  */
 function _logintoboggan_process_redirect($redirect, $account) {
   $variables = array('%uid' => $account->uid);
-  $redirect = parse_url(urldecode(strtr($redirect, $variables)));
+  $redirect = drupal_parse_url(urldecode(strtr($redirect, $variables)));
 
   // If there's a path set, override the destination parameter if necessary.
   if ($redirect['path'] && variable_get('logintoboggan_override_destination_parameter', 1)) {
     unset($_GET['destination']);
   }
 
-  // Explicitly create query and fragment elements if not present already.
-  $query = isset($redirect['query']) ? $redirect['query'] : array();
-  $fragment = isset($redirect['fragment']) ? $redirect['fragment'] : '';
-
   return array(
     $redirect['path'],
     array(
-      'query' => $query,
-      'fragment' => $fragment,
+      'query' => $redirect['query'],
+      'fragment' => $redirect['fragment'],
     ),
   );
 }

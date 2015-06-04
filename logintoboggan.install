@@ -24,7 +24,7 @@ function logintoboggan_disable() {
 }
 
 /**
- * Remove hardcoded numeric deltas from blocks.
+ * Remove hard-coded numeric deltas from blocks.
  */
 function logintoboggan_update_7000(&$sandbox) {
   // Get an array of the renamed block deltas, organized by module.

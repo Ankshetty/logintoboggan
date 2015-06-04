@@ -65,8 +65,8 @@ function logintoboggan_help($path, $arg) {
     case 'admin/help#logintoboggan':
       $output = t("<p>The Login Toboggan module improves the Drupal login system by offering the following features:
       <ol>
-      <li>Allow users to login using either their username OR their e-mail address.</li>
-      <li>Allow users to login immediately.</li>
+      <li>Allow users to log in using either their username OR their e-mail address.</li>
+      <li>Allow users to log in immediately.</li>
       <li>Provide a login form on Access Denied pages for non-logged-in (anonymous) users.</li>
       <li>The module provides two login block options: One uses JavaScript to display the form within the block immediately upon clicking 'log in'. The other brings the user to a separate page, but returns the user to their original page upon login.</li>
       <li>Customize the registration form with two e-mail fields to ensure accuracy.</li>
@@ -139,7 +139,7 @@ function logintoboggan_form_block_admin_configure_alter(&$form, &$form_state) {
       '#title' => t('Block type'),
       '#default_value' => variable_get('logintoboggan_login_block_type', 0),
       '#options' => array(t('Standard'), t('Link'), t('Collapsible form')),
-      '#description' => t("'Standard' is a standard login block, 'Link' is a login link that returns the user to the original page after logging in, 'Collapsible form' is a javascript collaspible login form."),
+      '#description' => t("'Standard' is a standard login block, 'Link' is a login link that returns the user to the original page after logging in, 'Collapsible form' is a JavaScript collapsible login form."),
     );
 
     $form['settings']['logintoboggan_login_block_message'] = array(
@@ -202,7 +202,7 @@ function logintoboggan_form_user_profile_form_alter(&$form, &$form_state) {
           '#value' => '1',
         );
         if (variable_get('user_register', USER_REGISTER_VISITORS_ADMINISTRATIVE_APPROVAL) == USER_REGISTER_VISITORS_ADMINISTRATIVE_APPROVAL) {
-          $form['account']['status']['#description'] = t('If this user was created using the "Immediate Login" feature of LoginToboggan, and they are also awaiting adminstrator approval on their account, you must remove them from the site\'s pre-authorized role in the "Roles" section below, or they will not receive authenticated user permissions!');
+          $form['account']['status']['#description'] = t('If this user was created using the "Immediate Login" feature of LoginToboggan, and they are also awaiting administrator approval on their account, you must remove them from the site\'s pre-authorized role in the "Roles" section below, or they will not receive authenticated user permissions!');
         }
         $form['account']['roles']['#description'] = t("The user is assigned LoginToboggan's pre-authorized role, and is not currently receiving authenticated user permissions.");
       }
@@ -390,7 +390,7 @@ function logintoboggan_form_alter(&$form, &$form_state, $form_id) {
       // Disable the checkbox at the Account settings page which controls
       // whether e-mail verification is required upon registration or not.
       // The LoginToboggan module implements e-mail verification functionality
-      // differently than core, and will control wether e-mail verification is
+      // differently than core, and will control whether e-mail verification is
       // required or not.
       $form['registration_cancellation']['user_email_verification']['#disabled'] = true;
       $form['registration_cancellation']['user_email_verification']['#description'] = t('This setting has been locked by the LoginToboggan module. You can change this setting by modifying the <strong>Set password</strong> checkbox at <a href="!link">LoginToboggan settings page</a>.', array('!link' => url('admin/config/system/logintoboggan')));
@@ -749,7 +749,7 @@ function logintoboggan_revalidate_access($account) {
  *   Which form to display, should be 'login' or 'register'.
  */
 function logintoboggan_unified_login_page($active_form = 'login') {
-  // Sanitise the $active_form text as it comes direct from the url.
+  // Sanitize the $active_form text as it comes direct from the url.
   // It should only ever be 'login' or 'register', so default to 'login'.
   if ($active_form != 'login' && $active_form != 'register') {
     $active_form = 'login';
@@ -767,7 +767,7 @@ function logintoboggan_unified_login_page($active_form = 'login') {
 }
 
 /**
- * Implemenation of hook_theme().
+ * Implementation of hook_theme().
  *
  * @ingroup logintoboggan_core
  */
@@ -1199,7 +1199,7 @@ function theme_lt_username_description($variables) {
   switch ($variables['form_id']) {
     case 'user_login':
       // The username field's description when shown on the /user/login page.
-      return t('You may login with either your assigned username or your e-mail address.');
+      return t('You may log in with either your assigned username or your e-mail address.');
       break;
     case 'user_login_block':
       return '';

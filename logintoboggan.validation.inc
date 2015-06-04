@@ -39,7 +39,7 @@ function logintoboggan_validate_email($account, $timestamp, $hashed_pass, $actio
           drupal_set_message(t('You have successfully validated your e-mail address.'));
         }
         if (!$account->status) {
-          drupal_set_message(t('Your account is currently blocked -- login cancelled.'), 'error');
+          drupal_set_message(t('Your account is currently blocked -- login canceled.'), 'error');
           drupal_goto('');
         }
         else {

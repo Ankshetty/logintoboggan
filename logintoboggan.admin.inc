@@ -17,7 +17,7 @@ function logintoboggan_main_settings() {
 
   $form['login']['logintoboggan_login_with_email'] = array(
     '#type' => 'radios',
-    '#title' => t('Allow users to login using their e-mail address'),
+    '#title' => t('Allow users to log in using their e-mail address'),
     '#default_value' => variable_get('logintoboggan_login_with_email', 0),
     '#options' => array($_disabled, $_enabled),
     '#description' => t('Users will be able to enter EITHER their username OR their e-mail address to log in.'),

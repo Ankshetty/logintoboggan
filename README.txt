@@ -29,7 +29,7 @@ module by offering the following features:
   11. Optionally have unvalidated users purged from the system at a pre-defined
       interval
       (please read the CAVEATS section of INSTALL.txt for important information
-       on configuringthis feature!).
+       on configuring this feature!).
 
 Users who choose their own password can be automatically assigned to a selected
 'non-authenticated' role. This role could have more permissions than anonymous

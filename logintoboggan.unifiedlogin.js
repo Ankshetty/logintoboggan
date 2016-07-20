@@ -16,7 +16,7 @@ Drupal.behaviors.unifiedLogin = {
           var title = data.match("<title>(.*?)</title>")[1];
           $('html head').find('title').text(title);
           $('h1.title').text(title.substring(0,title.indexOf('|')));
-        },
+        }
       });
       return false;
     });
@@ -31,7 +31,7 @@ Drupal.behaviors.unifiedLogin = {
           var title = data.match("<title>(.*?)</title>")[1];
           $('html head').find('title').text(title);
           $('h1.title').text(title.substring(0,title.indexOf('|')));
-        },
+        }
       });
       return false;
     });

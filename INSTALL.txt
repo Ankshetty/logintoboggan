@@ -22,7 +22,7 @@ Configure each block at Administration » Structure » Blocks as follows...
 1. Configure the 'User login' block for LoginToboggan functionality:
 
 Change title if required; using <none> can make for a very neat login system,
-when combined with the javascript functionality: clicking upon "Login/register"
+when combined with the JavaScript functionality: clicking upon "Login/register"
 reveals the login form in sliding fashion. To select this functionality, select
 'Collapsible form' under "Block type". Selecting 'Link' under "Block type"
 sends user to a login form, returning them to original page after successful
@@ -54,7 +54,7 @@ CAVEATS:
         re-added to the Non-authenticated role after a user has been validated.
         Note that these protections are only present in core's interface -- if
         you have another module enabled which does any role manipulation
-        (either via the user interface or programatically), you must find your
+        (either via the user interface or programmatically), you must find your
         own way to ensure that it doesn't add any users back into the
         Non-authenticated role.
 

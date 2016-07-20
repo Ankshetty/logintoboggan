@@ -30,7 +30,7 @@ function logintoboggan_variable_variable_info($options) {
       'localize' => FALSE,
     ),
     'logintoboggan_login_with_email' => array(
-      'title' => t('Allow users to login using their e-mail address', array(), $options),
+      'title' => t('Allow users to log in using their e-mail address', array(), $options),
       'description' => t('Users will be able to enter EITHER their username OR their e-mail address to log in.', array(), $options),
       'default' => 0,
       'type' => 'boolean',
@@ -71,7 +71,7 @@ function logintoboggan_variable_variable_info($options) {
     ),
     'logintoboggan_redirect_on_confirm' => array(
       'title' => t('Redirect path on confirmation', array(), $options),
-      'description' => t('The path the user will be redirected to after confiming their account.', array(), $options),
+      'description' => t('The path the user will be redirected to after confirming their account.', array(), $options),
       'default' => '',
       'type' => 'url',
       'group' => 'user_settings',

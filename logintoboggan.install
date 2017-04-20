@@ -60,3 +60,28 @@ function logintoboggan_uninstall() {
   	variable_del($variable);
   }
 }
+
+/**
+ * Implement hook_requirements
+ */
+function logintoboggan_requirements($phase) {
+  $requirements = array();
+  $t = get_t();
+  if($phase == 'runtime') {
+    $non_auth = variable_get('logintoboggan_pre_auth_role');
+    //Check whether there is a non-authenticated role set and that it is not
+    //the standard authenticated user role. If so, add a status report entry.
+    $roles = user_roles();
+    if(is_numeric($non_auth) && $non_auth != DRUPAL_AUTHENTICATED_RID){
+      $rolename = $roles[$non_auth];
+      $requirements['Logintoboggan'] = array(
+        'title' => $t('Logintoboggan non-authenticated user configuration'),
+        'description' => $t('Logintoboggan has set an active role that users can have, prior to providing email authentication. Ensure this does not conflict with modules such as OG that assume that all users have the standard authenticated role.'),
+        'value' => check_plain('Role name: ' . $rolename),
+        'severity' => REQUIREMENT_WARNING,
+      );
+    }
+
+  }
+  return $requirements;
+}

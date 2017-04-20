@@ -37,4 +37,7 @@ but less than authenticated - thus preventing spoof accounts and spammers. The
 user will only be removed from the non-authenticated role and granted
 authenticated permissions when they verify their account via a special email
 link, or when an administrator removes them from the non-authenticated role.
+It is important to check that this non-authenticated role does not cause
+problems when used with other contrib modules such as OG that assume all site
+users hold the authenticated user role.
 

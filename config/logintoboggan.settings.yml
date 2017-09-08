@@ -9,3 +9,5 @@ confirm_email_at_registration: false
 purge_unvalidated_user_interval: false
 immediate_login_on_register: true
 login_block_type: false
+user_register: visitors_admin_approval
+redirect_on_register:

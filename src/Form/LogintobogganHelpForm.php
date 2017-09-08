@@ -10,6 +10,7 @@ use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Extension\ModuleHandler;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\Core\Form\FormStateInterface;
 /**
  * Configure search settings for this site.
  */
@@ -36,6 +37,14 @@ class LogintobogganHelpForm extends ConfigFormBase {
   }
 
   /**
+   * {@inheritdoc}
+   */
+  protected function getEditableConfigNames() {
+    return [
+      'logintoboggan.settings',
+    ];
+  }
+  /**
    * Gets the roles to display in this form.
    *
    * @return \Drupal\user\RoleInterface[]
@@ -44,7 +53,7 @@ class LogintobogganHelpForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, array &$form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state) {
     $example = t('
       [user:name],
 

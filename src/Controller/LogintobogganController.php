@@ -1,6 +1,11 @@
 <?php
+/**
+ * @file
+ * Contains \Drupal\logintoboggan\Controller\LogintobogganController.
+ */
 
-namespace Drupal\logintoboggan\Controller;
+namespace Drupal\logintoboggan\Controller
+
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;

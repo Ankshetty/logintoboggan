@@ -7,9 +7,9 @@
 
 namespace Drupal\logintoboggan\Plugin\Block;
 
-use Drupal\block\BlockBase;
-use Drupal\Component\Annotation\Plugin;
-use Drupal\Core\Annotation\Translation;
+use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Block\BlockBase;
+use Drupal\Core\Session\AccountInterface;
 
 /**
  * Provides a 'LoginToboggan logged' block.
@@ -22,7 +22,7 @@ use Drupal\Core\Annotation\Translation;
  */
 
 class LoginTobogganloggedBlock extends BlockBase {
- /**
+  /**
    * Implements \Drupal\block\BlockBase::blockBuild().
    */
   public function build() {
@@ -33,4 +33,17 @@ class LoginTobogganloggedBlock extends BlockBase {
     );
     return $page;
   }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function blockAccess(AccountInterface $account) {
+    if ($account->isAnonymous()) {
+      return AccessResult::forbidden();
+    }
+    else{
+      return AccessResult::allowed();
+    }
+  }
+
 }

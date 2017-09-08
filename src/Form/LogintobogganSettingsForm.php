@@ -1,8 +1,4 @@
 <?php
-/**
- * @file
- * Contains \Drupal\logintoboggan\Form\LogintobogganSettingsForm.
- */
 
 namespace Drupal\logintoboggan\Form;
 
@@ -10,6 +6,9 @@ use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Extension\ModuleHandler;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Url;
+
 /**
  * Configure search settings for this site.
  */
@@ -36,6 +35,15 @@ class LogintobogganSettingsForm extends ConfigFormBase {
   }
 
   /**
+   * {@inheritdoc}
+   */
+  protected function getEditableConfigNames() {
+    return [
+      'logintoboggan.settings',
+    ];
+  }
+
+  /**
    * Gets the roles to display in this form.
    *
    * @return \Drupal\user\RoleInterface[]
@@ -44,8 +52,8 @@ class LogintobogganSettingsForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, array &$form_state) {
-  $config = $this->configFactory->get('logintoboggan.settings');
+  public function buildForm(array $form, FormStateInterface $form_state) {
+  $config = $this->config('logintoboggan.settings');
 
   $_disabled = $this->t('Disabled');
   $_enabled = $this->t('Enabled');
@@ -89,7 +97,7 @@ class LogintobogganSettingsForm extends ConfigFormBase {
     '#type' => 'checkbox',
     '#title' => t('Set password'),
     '#default_value' => !$this->configFactory->get('user.settings')->get('verify_mail'),
-    '#description' => $this->t("This will allow users to choose their initial password when registering (note that this setting is a mirror of the <a href=\"!settings\">Require e-mail verification when a visitor creates an account</a> setting, and is merely here for convenience). If selected, users will be assigned to the role below. They will not be assigned to the 'authenticated user' role until they confirm their e-mail address by following the link in their registration e-mail. It is HIGHLY recommended that you set up a 'pre-authorized' role with limited permissions for this purpose. <br />NOTE: If you enable this feature, you should edit the <a href=\"!settings\">Welcome (no approval required)</a> text.", array('!settings' => url('admin/config/people/accounts'))) . $help_text,
+    '#description' => $this->t("This will allow users to choose their initial password when registering (note that this setting is a mirror of the <a href=\":settings\">Require e-mail verification when a visitor creates an account</a> setting, and is merely here for convenience). If selected, users will be assigned to the role below. They will not be assigned to the 'authenticated user' role until they confirm their e-mail address by following the link in their registration e-mail. It is HIGHLY recommended that you set up a 'pre-authorized' role with limited permissions for this purpose. <br />NOTE: If you enable this feature, you should edit the <a href=\":settings\">Welcome (no approval required)</a> text.", array(':settings' => url::fromRoute('entity.user.admin_form')->toString())) . $help_text,
   );
 
   // Grab the roles that can be used for pre-auth. Remove the anon role, as it's not a valid choice.
@@ -99,7 +107,7 @@ class LogintobogganSettingsForm extends ConfigFormBase {
     '#title' => $this->t('Non-authenticated role'),
     '#options' => $roles,
     '#default_value' => $config->get('pre_auth_role'),
-    '#description' => $this->t('If "Set password" is selected, users will be able to login before their e-mail address has been authenticated. Therefore, you must choose a role for new non-authenticated users -- you may wish to <a href="!url">add a new role</a> for this purpose. Users will be removed from this role and assigned to the "authenticated user" role once they follow the link in their welcome e-mail. <strong>WARNING: changing this setting after initial site setup can cause undesirable results, including unintended deletion of users -- change with extreme caution!</strong>', array('!url' => url('admin/people/permissions/roles'))),
+    '#description' => $this->t('If "Set password" is selected, users will be able to login before their e-mail address has been authenticated. Therefore, you must choose a role for new non-authenticated users -- you may wish to <a href=":url">add a new role</a> for this purpose. Users will be removed from this role and assigned to the "authenticated user" role once they follow the link in their welcome e-mail. <strong>WARNING: changing this setting after initial site setup can cause undesirable results, including unintended deletion of users -- change with extreme caution!</strong>', array(':url' => url::fromRoute('entity.user_role.collection')->toString())),
   );
 
   $purge_options = array(
@@ -194,7 +202,7 @@ class LogintobogganSettingsForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function validateForm(array &$form, array &$form_state) {
+  public function validateForm(array &$form, FormStateInterface $form_state) {
     parent::validateForm($form, $form_state);
 
     }
@@ -202,7 +210,7 @@ class LogintobogganSettingsForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, array &$form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state) {
     $config = $this->configFactory->get('logintoboggan.settings');
     parent::submitForm($form, $form_state);
     foreach ($form_state['values'] as $key => $value) {

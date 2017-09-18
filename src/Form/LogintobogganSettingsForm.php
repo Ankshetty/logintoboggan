@@ -53,8 +53,8 @@ class LogintobogganSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-  $config = $this->config('logintoboggan.settings');
 
+  $config = $this->config('logintoboggan.settings');
   $_disabled = $this->t('Disabled');
   $_enabled = $this->t('Enabled');
   $form['login'] = array(
@@ -88,7 +88,7 @@ class LogintobogganSettingsForm extends ConfigFormBase {
   );
 
   if (\Drupal::moduleHandler()->moduleExists('help')) {
-    $help_text =  $this->t(" More help in writing the e-mail message can be found at <a href=\"!help\">LoginToboggan help</a>.", array('!help' => url('admin/help/logintoboggan')));
+    $help_text =  $this->t(" More help in writing the e-mail message can be found at <a href=\"@help\">LoginToboggan help</a>.", array('@help' => '/admin/help/logintoboggan'));
   }
   else {
     $help_text = '';
@@ -97,7 +97,7 @@ class LogintobogganSettingsForm extends ConfigFormBase {
     '#type' => 'checkbox',
     '#title' => t('Set password'),
     '#default_value' => !$this->configFactory->get('user.settings')->get('verify_mail'),
-    '#description' => $this->t("This will allow users to choose their initial password when registering (note that this setting is a mirror of the <a href=\":settings\">Require e-mail verification when a visitor creates an account</a> setting, and is merely here for convenience). If selected, users will be assigned to the role below. They will not be assigned to the 'authenticated user' role until they confirm their e-mail address by following the link in their registration e-mail. It is HIGHLY recommended that you set up a 'pre-authorized' role with limited permissions for this purpose. <br />NOTE: If you enable this feature, you should edit the <a href=\":settings\">Welcome (no approval required)</a> text.", array(':settings' => url::fromRoute('entity.user.admin_form')->toString())) . $help_text,
+    '#description' => $this->t("This will allow users to choose their initial password when registering (note that this setting is a mirror of the <a href=\"!settings\">Require e-mail verification when a visitor creates an account</a> setting, and is merely here for convenience). If selected, users will be assigned to the role below. They will not be assigned to the 'authenticated user' role until they confirm their e-mail address by following the link in their registration e-mail. It is HIGHLY recommended that you set up a 'pre-authorized' role with limited permissions for this purpose. <br />NOTE: If you enable this feature, you should edit the <a href=\":settings\">Welcome (no approval required)</a> text.", array(':settings' => Url::fromRoute('entity.user.admin_form')->toString())) . $help_text,
   );
 
   // Grab the roles that can be used for pre-auth. Remove the anon role, as it's not a valid choice.
@@ -107,7 +107,12 @@ class LogintobogganSettingsForm extends ConfigFormBase {
     '#title' => $this->t('Non-authenticated role'),
     '#options' => $roles,
     '#default_value' => $config->get('pre_auth_role'),
-    '#description' => $this->t('If "Set password" is selected, users will be able to login before their e-mail address has been authenticated. Therefore, you must choose a role for new non-authenticated users -- you may wish to <a href=":url">add a new role</a> for this purpose. Users will be removed from this role and assigned to the "authenticated user" role once they follow the link in their welcome e-mail. <strong>WARNING: changing this setting after initial site setup can cause undesirable results, including unintended deletion of users -- change with extreme caution!</strong>', array(':url' => url::fromRoute('entity.user_role.collection')->toString())),
+    '#description' => $this->t('If "Set password" is selected, users will be able to login before their e-mail address has been authenticated. Therefore, you must choose a role for new non-authenticated users -- you may wish to <a href=":url">add a new role</a> for this purpose. Users will be removed from this role and assigned to the "authenticated user" role once they follow the link in their welcome e-mail. <strong>WARNING: changing this setting after initial site setup can cause undesirable results, including unintended deletion of users -- change with extreme caution!</strong>', array(':url' => Url::fromUserInput('/admin/people/permissions/roles')->toString())),
+    '#states' => array(
+      // Hide the settings when the cancel notify checkbox is disabled.
+      'invisible' => array(':input[name="user_email_verification"]' => array('checked' => FALSE),
+      ),
+    ),
   );
 
   $purge_options = array(
@@ -131,7 +136,12 @@ class LogintobogganSettingsForm extends ConfigFormBase {
     '#title' => $this->t('Delete unvalidated users after'),
     '#options' => $purge_options,
     '#default_value' => $config->get('purge_unvalidated_user_interval'),
-    '#description' => $this->t("If enabled, users that are still in the 'Non-authenticated role' set above will be deleted automatically from the system, if the set time interval since their initial account creation has passed. This can be used to automatically purge spambot registrations. Note: this requires cron, and also requires that the 'Set password' option above is enabled. <strong>WARNING: changing this setting after initial site setup can cause undesirable results, including unintended deletion of users -- change with extreme caution! (please read the CAVEATS section of INSTALL.txt for important information on configuring this feature)</strong>")
+    '#description' => $this->t("If enabled, users that are still in the 'Non-authenticated role' set above will be deleted automatically from the system, if the set time interval since their initial account creation has passed. This can be used to automatically purge spambot registrations. Note: this requires cron, and also requires that the 'Set password' option above is enabled. <strong>WARNING: changing this setting after initial site setup can cause undesirable results, including unintended deletion of users -- change with extreme caution! (please read the CAVEATS section of INSTALL.txt for important information on configuring this feature)</strong>"),
+    '#states' => array(
+      // Hide the settings when the cancel notify checkbox is disabled.
+      'invisible' => array(':input[name="user_email_verification"]' => array('checked' => FALSE),
+      ),
+    ),
   );
 
   $form['registration']['immediate_login_on_register'] = array(
@@ -139,6 +149,11 @@ class LogintobogganSettingsForm extends ConfigFormBase {
     '#title' => $this->t('Immediate login'),
     '#default_value' => $config->get('immediate_login_on_register'),
     '#description' => $this->t("If set, the user will be logged in immediately after registering. Note this only applies if the 'Set password' option above is enabled."),
+    '#states' => array(
+      // Hide the settings when the cancel notify checkbox is disabled.
+      'invisible' => array(':input[name="user_email_verification"]' => array('checked' => FALSE),
+      ),
+    ),
   );
 
   $form['registration']['redirect'] = array(
@@ -211,14 +226,22 @@ class LogintobogganSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $config = $this->configFactory->get('logintoboggan.settings');
+//    $config = $this->configFactory->get('logintoboggan.settings');
     parent::submitForm($form, $form_state);
-    foreach ($form_state['values'] as $key => $value) {
+    $config = $this->config('logintoboggan.settings');
+    foreach ($form_state->getValues() as $key => $value) {
       if (!in_array($key, array('submit', 'form_build_id', 'form_token', 'form_id', 'op'))) {
         if ($key == 'user_email_verification') {
-          $value = !$value;
+          $userconfig = \Drupal::getContainer()->get('config.factory')->getEditable('user.settings');
+          $userconfig->set('verify_mail', !$form_state->getValue('user_email_verification'));
+          $userconfig->save();
         }
-        $config ->set($key,  $value);
+        if ($key == 'site_403') {
+          $site_config = \Drupal::getContainer()->get('config.factory')->getEditable('system.site');
+          $site_config->set('page.403', ($value == 0) ? '' : '/toboggan/denied');
+          $site_config->save();
+        }
+        $config->set($key, $value);
       }
     }
     $config->save();

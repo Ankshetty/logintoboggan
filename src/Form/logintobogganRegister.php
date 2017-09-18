@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * Contains \Drupal\logintoboggan\Form\LogintobogganRegister.
+ * Contains \Drupal\logintoboggan\Form\LoginToBogganRegister.
  */
 
 namespace Drupal\logintoboggan\Form;
@@ -9,7 +9,7 @@ namespace Drupal\logintoboggan\Form;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\user\RegisterForm;
 
-class LogintobogganRegister extends RegisterForm {
+class LoginToBogganRegister extends RegisterForm {
 
   /**
    * {@inheritdoc}
@@ -62,7 +62,7 @@ class LogintobogganRegister extends RegisterForm {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    \Drupal::logger('logintoboggan')->notice('submitForm handler is being called in LogintobogganRegister');
+    \Drupal::logger('logintoboggan')->notice('submitForm handler is being called in LoginToBogganRegister');
 
     $admin = $form_state->getValue('administer_users');
 

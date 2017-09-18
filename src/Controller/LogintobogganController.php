@@ -4,7 +4,7 @@
  * Contains \Drupal\logintoboggan\Controller\LogintobogganController.
  */
 
-namespace Drupal\logintoboggan\Controller
+namespace Drupal\logintoboggan\Controller;
 
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -92,10 +92,10 @@ class LogintobogganController implements ContainerInjectionInterface {
       }
     }
     else {
-      $message = t("Sorry, you can only use your validation link once for security reasons.");
+      $message = t('Sorry, you can only use your validation link once for security reasons.');
       // No one currently logged in, go straight to user login page.
       if ($cur_account->isAnonymous()) {
-        $message .= t(" Please log in with your username and password instead now.");
+        $message .= t('Please log in with your username and password instead now.');
         $goto = 'user.login';
       }
       else {

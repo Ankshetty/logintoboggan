@@ -54,7 +54,7 @@ function logintoboggan_cron() {
 
       // Log the purged users.
       if (!empty($purged_users)) {
-        watchdog('logintoboggan', 'Purged the following unvalidated users: !purged_users', array('!purged_users' => theme('item_list', array('items' => $purged_users))));
+        watchdog('logintoboggan', 'Purged the following unvalidated users: @purged_users', array('@purged_users' => theme('item_list', array('items' => $purged_users))));
       }
     }
   }
@@ -81,9 +81,9 @@ function logintoboggan_help($path, $arg) {
       <li>Optionally display an 'Request new password' link on the user login form.</li>
       <li>Optionally have unvalidated users purged from the system at a pre-defined interval (please read the CAVEATS section of INSTALL.txt for important information on configuring this feature!).</li>
       </ol>
-      These features may be turned on or off in the Login Toboggan <a href=\"!url\">settings</a>.</p>
-      <p>Because this module completely reorients the Drupal login process you will probably want to edit the welcome e-mail on the <a href=\"!user_settings\">user settings</a> page. Note when the 'Set password' option is enabled, the [user:validate-url] token becomes a verification url that the user MUST visit in order to enable authenticated status). The following is an example welcome e-mail:</p>
-      ", array('!url' => url('admin/config/system/logintoboggan'), '!user_settings' => url('admin/config/people/accounts')));
+      These features may be turned on or off in the Login Toboggan <a href=\":url\">settings</a>.</p>
+      <p>Because this module completely reorients the Drupal login process you will probably want to edit the welcome e-mail on the <a href=\":user_settings\">user settings</a> page. Note when the 'Set password' option is enabled, the [user:validate-url] token becomes a verification url that the user MUST visit in order to enable authenticated status). The following is an example welcome e-mail:</p>
+      ", array(':url' => url('admin/config/system/logintoboggan'), ':user_settings' => url('admin/config/people/accounts')));
       $example_help_form = \Drupal::formBuilder()->getForm('\Drupal\logintoboggan\Form\LogintobogganHelpForm');
       $output .= drupal_render($example_help_form);
       $output .= t("<p>Note that if you have set the 'Visitors can create accounts but administrator approval is required' option for account approval, and are also using the 'Set password' feature of LoginToboggan, the user will immediately receive the permissions of the pre-authorized user role. LoginToboggan prevents the pre-authorized role from automatically inheriting the authorized role permissions. You may wish to create a pre-authorized role with the exact same permissions as the anonymous user if you wish the newly created user to only have anonymous permissions.</p><p>In order for a site administrator to unblock a user who is awaiting administrator approval, they must either click on the validation link they receive in their notification e-mail, or manually remove the user from the site's pre-authorized role -- afterwards the user will then receive 'authenticated user' permissions. In either case, the user will receive an account activated e-mail if it's enabled on the user settings page -- it's recommended that you edit the default text of the activation e-mail to match LoginToboggan's workflow as described. </p><p>If you are using the 'Visitors can create accounts and no administrator approval is required' option, removal of the pre-authorized role will happen automatically when the user validates their account via e-mail.</p><p>Also be aware that LoginToboggan only affects registrations initiated by users--any user account created by an administrator will not use any LoginToboggan functionality.");
@@ -91,7 +91,7 @@ function logintoboggan_help($path, $arg) {
       break;
     case 'admin/config/system/logintoboggan':
       if ( \Drupal::moduleHandler()->moduleExists('help')) {
-        $help_text =  t("More help can be found at <a href=\"!help\">LoginToboggan help</a>.", array('!help' => url('admin/help/logintoboggan')));
+        $help_text =  t("More help can be found at <a href=\":help\">LoginToboggan help</a>.", array(':help' => url('admin/help/logintoboggan')));
       }
       else {
         $help_text = '';
@@ -176,7 +176,7 @@ function logintoboggan_form_alter(&$form, &$form_state, $form_id) {
       // required or not.
       $form['registration_cancellation']['user_email_verification']['#disabled'] = true;
       $form['registration_cancellation']['user_email_verification']['#description'] = t('This setting has been locked by the LoginToboggan module.
-      You can change this setting by modifying the <strong>Set password</strong> checkbox at <a href="!link">LoginToboggan settings page</a>.', array('!link' => Url::fromUserInput('/admin/config/system/logintoboggan')->toString()));
+      You can change this setting by modifying the <strong>Set password</strong> checkbox at <a href=":link">LoginToboggan settings page</a>.', array(':link' => Url::fromUserInput('/admin/config/system/logintoboggan')->toString()));
       break;
   }
 }
@@ -569,16 +569,16 @@ function logintoboggan_user_edit_validate($form, &$form_state) {
     $uid = isset($account->uid) ? $account->uid : 0;
     // Check that no user is using this name for their email address.
     if (isset($edit['name']) && db_query("SELECT uid FROM {users} WHERE LOWER(mail) = LOWER(:mail) AND uid <> :uid", array(
-        ':mail' => $edit['name'],
-        ':uid' => $uid,
-      ))->fetchField()) {
+      ':mail' => $edit['name'],
+      ':uid' => $uid,
+    ))->fetchField()) {
       form_set_error('name', t('This name has already been taken by another user.'));
     }
     // Check that no user is using this email address for their name.
     if (isset($edit['mail']) && db_query("SELECT uid FROM {users} WHERE LOWER(name) = LOWER(:name) AND uid <> :uid", array(
-        ':name' => $edit['mail'],
-        ':uid' => $uid,
-      ))->fetchField()) {
+      ':name' => $edit['mail'],
+      ':uid' => $uid,
+    ))->fetchField()) {
       form_set_error('mail', t('This e-mail has already been taken by another user.'));
     }
   }
@@ -972,7 +972,7 @@ function logintoboggan_mail_alter(&$message) {
       $url_options = array('absolute' => TRUE);
       $language = $message['language'];
       $langcode = isset($language->language) ? $language->language : NULL;
-      $message['body'][] = t("\n\nThe user has automatically received the permissions of the LoginToboggan validating role. To give the user full site permissions, click the link below:\n\n!validation_url/admin\n\nAlternatively, you may visit their user account listed above and remove them from the validating role.", array('!validation_url' => logintoboggan_eml_validate_url($account, $url_options)), array('langcode' => $langcode));
+      $message['body'][] = t("\n\nThe user has automatically received the permissions of the LoginToboggan validating role. To give the user full site permissions, click the link below:\n\n:validation_url/admin\n\nAlternatively, you may visit their user account listed above and remove them from the validating role.", array(':validation_url' => logintoboggan_eml_validate_url($account, $url_options)), array('langcode' => $langcode));
     }
   }
 }

@@ -56,7 +56,7 @@ function logintoboggan_validate_email($account, $timestamp, $hashed_pass, $actio
         }
 
         drupal_set_message(t('You have successfully validated %user.', array('%user' => $account->name)));
-        drupal_goto("user/$account->uid/edit");
+        drupal_goto("user/$account->id/edit");
         break;
       // Catch all.
       default:
@@ -66,10 +66,10 @@ function logintoboggan_validate_email($account, $timestamp, $hashed_pass, $actio
     }
   }
   else {
-    $message = t("Sorry, you can only use your validation link once for security reasons.");
+    $message = t('Sorry, you can only use your validation link once for security reasons.');
     // No one currently logged in, go straight to user login page.
     if (empty($user->uid)) {
-      $message .= t(" Please log in with your username and password instead now.");
+      $message .= t('Please log in with your username and password instead now.');
       $goto = 'user/login';
     }
     else {
@@ -84,7 +84,7 @@ function logintoboggan_validate_email($account, $timestamp, $hashed_pass, $actio
  * Re-sends validation e-mail to user specified by $uid.
  */
 function logintoboggan_resend_validation($account) {
-  $account->password = t('If required, you may reset your password from: !url', array('!url' => url('user/password', array('absolute' => TRUE))));
+  $account->password = t('If required, you may reset your password from: :url', array(':url' => url('user/password', array('absolute' => TRUE))));
 
   _user_mail_notify('register_no_approval_required', $account);
 
@@ -96,6 +96,6 @@ function logintoboggan_resend_validation($account) {
     drupal_set_message(t('A validation e-mail has been sent to your e-mail address. You will need to follow the instructions in that message in order to gain full access to the site.'));
   }
 
-  drupal_goto('user/'. $account->uid .'/edit');
+  drupal_goto('user/'. $account->id .'/edit');
 }
 

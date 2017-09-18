@@ -1,4 +1,3 @@
-
 name = "LoginToboggan Content Access Integration"
 description = "Integrates LoginToboggan with Content Access module, so that Non-validated users are handled correctly"
 core = "7.x"

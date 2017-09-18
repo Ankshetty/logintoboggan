@@ -176,7 +176,7 @@ function logintoboggan_form_alter(&$form, &$form_state, $form_id) {
       // required or not.
       $form['registration_cancellation']['user_email_verification']['#disabled'] = true;
       $form['registration_cancellation']['user_email_verification']['#description'] = t('This setting has been locked by the LoginToboggan module.
-      You can change this setting by modifying the <strong>Set password</strong> checkbox at <a href=":link">LoginToboggan settings page</a>.', array(':link' => Url::fromUserInput('/admin/config/system/logintoboggan')->toString()));
+      You can change this setting by modifying the <strong>Set password</strong> checkbox at <a href=":link">LoginToboggan settings page</a>.', array(':link' => Url::fromRoute('logintobogganform.settings')->toString()));
       break;
   }
 }

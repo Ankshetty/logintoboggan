@@ -101,13 +101,13 @@ class LogintobogganSettingsForm extends ConfigFormBase {
   );
 
   // Grab the roles that can be used for pre-auth. Remove the anon role, as it's not a valid choice.
-  $roles = user_role_names();
+  $roles = user_role_names(true);
   $form ['registration']['pre_auth_role'] = array(
     '#type' => 'select',
     '#title' => $this->t('Non-authenticated role'),
     '#options' => $roles,
     '#default_value' => $config->get('pre_auth_role'),
-    '#description' => $this->t('If "Set password" is selected, users will be able to login before their e-mail address has been authenticated. Therefore, you must choose a role for new non-authenticated users -- you may wish to <a href=":url">add a new role</a> for this purpose. Users will be removed from this role and assigned to the "authenticated user" role once they follow the link in their welcome e-mail. <strong>WARNING: changing this setting after initial site setup can cause undesirable results, including unintended deletion of users -- change with extreme caution!</strong>', array(':url' => Url::fromUserInput('/admin/people/permissions/roles')->toString())),
+    '#description' => $this->t('If "Set password" is selected, users will be able to login before their e-mail address has been authenticated. Therefore, you must choose a role for new non-authenticated users -- you may wish to <a href=":url">add a new role</a> for this purpose. Users will be removed from this role and assigned to the "authenticated user" role once they follow the link in their welcome e-mail. <strong>WARNING: changing this setting after initial site setup can cause undesirable results, including unintended deletion of users -- change with extreme caution!</strong>', array(':url' => Url::fromRoute('entity.user_role.collection')->toString())),
     '#states' => array(
       // Hide the settings when the cancel notify checkbox is disabled.
       'invisible' => array(':input[name="user_email_verification"]' => array('checked' => FALSE),

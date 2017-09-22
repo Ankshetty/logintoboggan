@@ -10,6 +10,7 @@
 use Drupal\Core\Url;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Component\Utility\UrlHelper;
+use Drupal\Core\Session\AccountInterface;
 
 /**
  * @todo
@@ -290,6 +291,7 @@ function logintoboggan_form_user_register_form_alter(&$form, \Drupal\Core\Form\F
   $pass = !\Drupal::config('user.settings')->get('user_email_verification');
 
   // Ensure a valid submit array.
+  //sc-todo problem could be this should be [actions][submit][#submit]
   $form['#submit'] = is_array($form['#submit']) ? $form['#submit'] : array();
 
   // Replace core's registration function with LT's registration function.
@@ -300,6 +302,7 @@ function logintoboggan_form_user_register_form_alter(&$form, \Drupal\Core\Form\F
     unset($form['#submit'][$key]);
   }
   array_unshift($form['#submit'],'logintoboggan_user_register_submit');
+  array_unshift($form['actions']['submit']['#submit'], 'logintoboggan_user_register_submit');
 
   if ($mail || $pass) {
     $form['#validate'][] = 'logintoboggan_user_register_validate';
@@ -431,7 +434,7 @@ function logintoboggan_user_register_submit($form, FormStateInterface $form_stat
 
   // Test here for a valid pre-auth -- if the pre-auth is set to the auth user, we
   // handle things a bit differently.
-  $pre_auth = logintoboggan_validating_id() != DRUPAL_AUTHENTICATED_RID;
+  $pre_auth = logintoboggan_validating_id() != AccountInterface::AUTHENTICATED_ROLE;
 
   // If we are allowing user selected passwords then skip the auto-generate function
   // The new user's status will be 1 (visitors can create own accounts) if reg_pass_set == 1
@@ -822,7 +825,7 @@ function _logintoboggan_process_validation($account) {
   // Test here for a valid pre-auth -- if the pre-auth is set to the auth user, we
   // handle things a bit differently.
   $validating_id = logintoboggan_validating_id();
-  $pre_auth = !\Drupal::config('user.settings')->get('verify_mail') && $validating_id != DRUPAL_AUTHENTICATED_RID;
+  $pre_auth = !\Drupal::config('user.settings')->get('verify_mail') && $validating_id != AccountInterface::AUTHENTICATED_ROLE;
   // Remove the pre-auth role from the user, unless they haven't been approved yet.
   if (!$account->isBlocked()) {
     if ($pre_auth) {

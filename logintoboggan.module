@@ -291,7 +291,7 @@ function logintoboggan_form_user_register_form_alter(&$form, \Drupal\Core\Form\F
   $pass = !\Drupal::config('user.settings')->get('user_email_verification');
 
   // Ensure a valid submit array.
-  //sc-todo problem could be this should be [actions][submit][#submit]
+  //stctodo problem could be this should be [actions][submit][#submit]
   $form['#submit'] = is_array($form['#submit']) ? $form['#submit'] : array();
 
   // Replace core's registration function with LT's registration function.
@@ -307,26 +307,8 @@ function logintoboggan_form_user_register_form_alter(&$form, \Drupal\Core\Form\F
   if ($mail || $pass) {
     $form['#validate'][] = 'logintoboggan_user_register_validate';
 
-    //Display a confirm e-mail address box if option is enabled.
-    if ($mail) {
-      $form['account']['conf_mail'] = array(
-        '#type' => 'textfield',
-        '#title' => t('Confirm e-mail address'),
-        '#weight' => -28,
-        '#maxlength' => 64,
-        '#description' => t('Please re-type your e-mail address to confirm it is accurate.'),
-        '#required' => TRUE,
-      );
 
-      // Weight things properly so that the order is name, mail, conf_mail.
-      $form['account']['name']['#weight'] = -30;
-      $form['account']['mail']['#weight'] = -29;
-    }
-    $min_pass = \Drupal::config('logintoboggan.settings')->get('minimum_password_length', 0);
-    if ($pass && $min_pass > 0) {
-      $form['account']['pass']['#description'] = isset($form['account']['pass']['#description']) ? $form['account']['pass']['#description'] . " " : "";
-      $form['account']['pass']['#description'] .= t('Password must be at least %length characters.', array('%length' => $min_pass));
-    }
+
   }
 }
 
@@ -432,6 +414,10 @@ function logintoboggan_page_alter(&$page) {
 function logintoboggan_user_register_submit($form, FormStateInterface $form_state) {
   $reg_pass_set = !\Drupal::config('user.settings')->get('verify_mail', TRUE);
 
+  $entity = $form_state->getFormObject();
+  $account = $entity->getEntity();
+
+
   // Test here for a valid pre-auth -- if the pre-auth is set to the auth user, we
   // handle things a bit differently.
   $pre_auth = logintoboggan_validating_id() != AccountInterface::AUTHENTICATED_ROLE;
@@ -465,7 +451,7 @@ function logintoboggan_user_register_submit($form, FormStateInterface $form_stat
   $form_state->setValue('roles', $roles);
   $form_state->setValue('status', $status);
 
-  $account = $form['#user'];
+  //$account = $form['#user'];
 
   $message = t('New user: @name (@email).', array('@name' => $form_state->getValue('name'), '@email' => $form_state->getValue('mail')));
   \Drupal::logger('user')->notice($message);
@@ -496,11 +482,13 @@ function logintoboggan_user_register_submit($form, FormStateInterface $form_stat
   }
 
   // Mail the user.
-  _user_mail_notify($mailkey, $account); //@TODO correctly detect the preferred language instead of enforcing 'en'.
+  //stctodo - this needs to be done after account has been created because at this point is has no uid and fails
+  //_user_mail_notify($mailkey, $account); //@TODO correctly detect the preferred language instead of enforcing 'en'.
 
   drupal_set_message($message);
 
   // where do we need to redirect after registration?
+  //stctodo = $acccount has no uid at this point so the redirect function can't work
   $redirect = _logintoboggan_process_redirect(\Drupal::config('logintoboggan.settings')->get('redirect_on_register'), $account);
   // Log the user in if they created the account and immediate login is enabled.
   if($reg_pass_set && \Drupal::config('logintoboggan.settings')->get('immediate_login_on_register')) {

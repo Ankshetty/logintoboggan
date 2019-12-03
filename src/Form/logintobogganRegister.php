@@ -29,6 +29,8 @@ class LoginToBogganRegister extends RegisterForm {
 
     $form['#attached']['library'][] = 'core/drupal.form';
 
+
+
     // For non-admin users, populate the form fields using data from the
     // browser.
     if (!$admin) {
@@ -45,6 +47,34 @@ class LoginToBogganRegister extends RegisterForm {
 
     // Start with the default user account fields.
     $form = parent::form($form, $form_state, $account);
+
+    //check setting for email confirmation
+    $mail_confirm =\Drupal::config('logintoboggan.settings')->get('confirm_email_at_registration');
+
+    //Display a confirm e-mail address box if option is enabled.
+    if ($mail_confirm) {
+      $form['account']['conf_mail'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Confirm e-mail address'),
+        '#weight' => -28,
+        '#maxlength' => 64,
+        '#description' => t('Please re-type your e-mail address to confirm it is accurate.'),
+        '#required' => TRUE,
+      );
+
+      // Weight things properly so that the order is name, mail, conf_mail.
+      $form['account']['name']['#weight'] = -30;
+      $form['account']['mail']['#weight'] = -29;
+    }
+
+    $pass = \Drupal::config('user.settings')->get('user_email_verification');
+    $min_pass = \Drupal::config('logintoboggan.settings')->get('minimum_password_length', 0);
+    if ($pass && $min_pass > 0) {
+      $form['account']['pass']['#description'] = isset($form['account']['pass']['#description']) ? $form['account']['pass']['#description'] . " " : "";
+      $form['account']['pass']['#description'] .= t('Password must be at least %length characters.', array('%length' => $min_pass));
+    }
+
+    $stop = '';
 
     return $form;
   }
@@ -119,6 +149,8 @@ class LoginToBogganRegister extends RegisterForm {
     $account->password = $pass;
 
     // New administrative account without notification.
+    $uid = $account->id();
+    $stop = '';
     if ($admin && !$notify) {
       drupal_set_message($this->t('Created a new user account for <a href=":url">%name</a>. No email has been sent.', array(':url' => $account->url(), '%name' => $account->getUsername())));
     }

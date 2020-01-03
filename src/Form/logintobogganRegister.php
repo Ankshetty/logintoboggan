@@ -8,6 +8,7 @@ namespace Drupal\logintoboggan\Form;
 
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\user\RegisterForm;
+use Drupal\Core\Messenger\MessengerInterface;
 
 class LoginToBogganRegister extends RegisterForm {
 
@@ -95,6 +96,7 @@ class LoginToBogganRegister extends RegisterForm {
     \Drupal::logger('logintoboggan')->notice('submitForm handler is being called in LoginToBogganRegister');
 
     $admin = $form_state->getValue('administer_users');
+    $reg_pass_set = !\Drupal::config('user.settings')->get('verify_mail', TRUE);
 
     if (!\Drupal::config('user.settings')->get('verify_mail') || $admin) {
       $pass = $form_state->getValue('pass');
@@ -152,7 +154,7 @@ class LoginToBogganRegister extends RegisterForm {
     $uid = $account->id();
     $stop = '';
     if ($admin && !$notify) {
-      drupal_set_message($this->t('Created a new user account for <a href=":url">%name</a>. No email has been sent.', array(':url' => $account->url(), '%name' => $account->getUsername())));
+      $this->messenger()->addStatus($this->t('Created a new user account for <a href=":url">%name</a>. No email has been sent.', [':url' => $account->toUrl()->toString(), '%name' => $account->getAccountName()]));
     }
     // No email verification required; log in user immediately.
     elseif (!$admin && !\Drupal::config('user.settings')->get('verify_mail') && $account->isActive()) {
@@ -173,7 +175,7 @@ class LoginToBogganRegister extends RegisterForm {
             drupal_set_message($this->t('A welcome message with further instructions has been emailed to the new user <a href=":url">%name</a>.', array(':url' => $account->url(), '%name' => $account->getUsername())));
           }
           else {
-            drupal_set_message($this->t('A welcome message with further instructions has been sent to your email address.'));
+            $this->messenger()->addStatus($this->t('A welcome message with further instructions has been sent to your email address.'));//drupal_set_message($this->t('A welcome message with further instructions has been sent to your email address.'));
             $form_state->setRedirect('<front>');
           }
         }

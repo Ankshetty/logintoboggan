@@ -433,17 +433,15 @@ function logintoboggan_user_register_submit($form, FormStateInterface $form_stat
   // The new user's status will be 1 (visitors can create own accounts) if reg_pass_set == 1
   // Immediate login, we are going to assign a pre-auth role, until email validation completed
   if ($reg_pass_set) {
-    $pass = $form_state->getValue('pass');
-    $status = 1;
+    //$pass = $form_state->getValue('pass');
+    //$status = 1;
   }
   else {
-    $pass = user_password();
+    //$pass = user_password();
+    //stc the constant user_register_visitors is moved to an interface
     $status = !\Drupal::config('user.settings')->get('user_register') == USER_REGISTER_VISITORS;
   }
 
-  // The unset below is needed to prevent these form values from being saved as
-  // user data.
-  $form_state->cleanValues();
 
   // Set the roles for the new user -- add the pre-auth role if they can pick their own password,
   // and the pre-auth role isn't anon or auth user.
@@ -453,15 +451,11 @@ function logintoboggan_user_register_submit($form, FormStateInterface $form_stat
     $roles[$validating_id] = 1;
   }
 
-  $form_state->setValue('pass', $pass);
+  //$form_state->setValue('pass', $pass);
   $form_state->setValue('init', $form_state->getValue('mail'));
   $form_state->setValue('roles', $roles);
-  $form_state->setValue('status', $status);
+  //$form_state->setValue('status', $status);
 
-  //$account = $form['#user'];
-
-  $message = t('New user: @name (@email).', array('@name' => $form_state->getValue('name'), '@email' => $form_state->getValue('mail')));
-  \Drupal::logger('user')->notice($message);
 
   // Add plain text password into user account to generate mail tokens.
   $account->password = $pass;

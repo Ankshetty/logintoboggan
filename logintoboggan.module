@@ -7,6 +7,7 @@
  * This module enhances the configuration abilities of Drupal's default login system.
  */
 
+use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Url;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Component\Utility\UrlHelper;
@@ -312,7 +313,7 @@ function logintoboggan_form_user_register_form_alter(&$form, \Drupal\Core\Form\F
   //stctodo this is the only use of these two variables so check what this validate
   //does and remove to controller
   if ($mail || $pass) {
-    $form['#validate'][] = 'logintoboggan_user_register_validate';
+    //$form['#validate'][] = 'logintoboggan_user_register_validate';
 
 
 
@@ -523,12 +524,7 @@ function logintoboggan_user_login_validate($form, &$form_state) {
  * @ingroup logintoboggan_form
  */
 function logintoboggan_user_register_validate(&$form, \Drupal\Core\Form\FormStateInterface $form_state) {
-  //Check to see whether our username matches any email address currently in the system.
-  if($mail = db_query("SELECT mail FROM {users_field_data} WHERE LOWER(:name) = LOWER(mail)", array(
-    ':name' => $form_state->getValue('name'),
-  ))->fetchField()) {
-    $form_state->setErrorByName('name', t('This e-mail has already been taken by another user.'));
-  }
+
   //Check to see whether our e-mail address matches the confirm address if enabled.
   if ( \Drupal::config('logintoboggan.settings')->get('confirm_email_at_registration') && $form_state->hasValue('conf_mail')) {
     if ($form_state->getValue('mail') != $form_state->getValue('conf_mail')) {
@@ -1116,4 +1112,14 @@ function template_preprocess_lt_unified_login_page(&$variables) {
  */
 function logintoboggan_entity_type_alter(array &$entity_types) {
   $entity_types['user']->setFormClass('register', 'Drupal\logintoboggan\Form\LoginToBogganRegister');
+}
+
+
+/**
+ * Implements hook_entity_bundle_field_info_alter().
+ */
+function logintoboggan_entity_base_field_info_alter(&$fields, EntityTypeInterface $entity_type) {
+  if ($entity_type->id() == 'user'  && !empty($fields['name'])) {
+    $fields['name']->addConstraint('UserMailName', []);
+  }
 }

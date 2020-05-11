@@ -97,17 +97,28 @@ class LogintobogganSettingsForm extends ConfigFormBase {
     '#type' => 'checkbox',
     '#title' => t('Set password'),
     '#default_value' => !$this->configFactory->get('user.settings')->get('verify_mail'),
-    '#description' => $this->t("This will allow users to choose their initial password when registering (note that this setting is a mirror of the <a href=\"!settings\">Require e-mail verification when a visitor creates an account</a> setting, and is merely here for convenience). If selected, users will be assigned to the role below. They will not be assigned to the 'authenticated user' role until they confirm their e-mail address by following the link in their registration e-mail. It is HIGHLY recommended that you set up a 'pre-authorized' role with limited permissions for this purpose. <br />NOTE: If you enable this feature, you should edit the <a href=\":settings\">Welcome (no approval required)</a> text.", array(':settings' => Url::fromRoute('entity.user.admin_form')->toString())) . $help_text,
+    '#description' => $this->t("This will allow users to choose their initial password when registering 
+      (note that this setting is a mirror of the <a href=\"!settings\">Require e-mail verification when a visitor creates an account</a> setting, 
+      and is merely here for convenience). The benefit of doing this is users can login immediately. The downside is that you  have logged-in
+      users that have not yet confirmed a valid email address. If you are doing this, we recommend that you give authenticated users (Drupal term for logged-in)
+      limited permissions and you then give more permissions to a trusted role that gets assigned once the validation email link is used (see below).
+      <br />NOTE: 
+      If you enable this feature, you should edit the <a href=\":settings\">Welcome (no approval required)</a> text.", array(':settings' => Url::fromRoute('entity.user.admin_form')->toString())) . $help_text,
   );
 
-  // Grab the roles that can be used for pre-auth. Remove the anon role, as it's not a valid choice.
+
   $roles = user_role_names(true);
-  $form ['registration']['pre_auth_role'] = array(
+  $form ['registration']['trusted_role'] = array(
     '#type' => 'select',
-    '#title' => $this->t('Non-authenticated role'),
+    '#title' => $this->t('Trusted role'),
     '#options' => $roles,
-    '#default_value' => $config->get('pre_auth_role'),
-    '#description' => $this->t('If "Set password" is selected, users will be able to login before their e-mail address has been authenticated. Therefore, you must choose a role for new non-authenticated users -- you may wish to <a href=":url">add a new role</a> for this purpose. Users will be removed from this role and assigned to the "authenticated user" role once they follow the link in their welcome e-mail. <strong>WARNING: changing this setting after initial site setup can cause undesirable results, including unintended deletion of users -- change with extreme caution!</strong>', array(':url' => Url::fromRoute('entity.user_role.collection')->toString())),
+    '#default_value' => $config->get('trusted_role'),
+    '#description' => $this->t('If "Set password" is selected, users will
+       be able to login before their e-mail address has been confirmed. However, the user will automatically be
+       assigned Drupal\'s built-in authenticated user role. If want to restrict permissions for new users until they validate their email, 
+       create a new role for a trusted user that has more permissions than a basic authenticated user. When a new user sends a verification email, the user will be assigned the new role.
+       <br>
+       <strong>WARNING: changing this setting after initial site setup can cause undesirable results, including unintended deletion of users -- change with extreme caution!</strong>', array(':url' => Url::fromRoute('entity.user_role.collection')->toString())),
     '#states' => array(
       // Hide the settings when the cancel notify checkbox is disabled.
       'invisible' => array(':input[name="user_email_verification"]' => array('checked' => FALSE),
@@ -136,7 +147,11 @@ class LogintobogganSettingsForm extends ConfigFormBase {
     '#title' => $this->t('Delete unvalidated users after'),
     '#options' => $purge_options,
     '#default_value' => $config->get('purge_unvalidated_user_interval'),
-    '#description' => $this->t("If enabled, users that are still in the 'Non-authenticated role' set above will be deleted automatically from the system, if the set time interval since their initial account creation has passed. This can be used to automatically purge spambot registrations. Note: this requires cron, and also requires that the 'Set password' option above is enabled. <strong>WARNING: changing this setting after initial site setup can cause undesirable results, including unintended deletion of users -- change with extreme caution! (please read the CAVEATS section of INSTALL.txt for important information on configuring this feature)</strong>"),
+    '#description' => $this->t("If enabled, users that do not have the trusted
+       set above will be deleted automatically from the system, if the set time interval
+        since their initial account creation has passed. This can be used to automatically purge spambot registrations.
+         Note: this requires cron, and also requires that the 'Set password' option above is enabled. 
+         <strong>WARNING: changing this setting after initial site setup can cause undesirable results, including unintended deletion of users -- change with extreme caution! (please read the CAVEATS section of INSTALL.txt for important information on configuring this feature)</strong>"),
     '#states' => array(
       // Hide the settings when the cancel notify checkbox is disabled.
       'invisible' => array(':input[name="user_email_verification"]' => array('checked' => FALSE),
@@ -148,7 +163,9 @@ class LogintobogganSettingsForm extends ConfigFormBase {
     '#type' => 'checkbox',
     '#title' => $this->t('Immediate login'),
     '#default_value' => $config->get('immediate_login_on_register'),
-    '#description' => $this->t("If set, the user will be logged in immediately after registering. Note this only applies if the 'Set password' option above is enabled."),
+    '#description' => $this->t("If set, the user will be logged in immediately after registering.
+     Note this only applies if the 'Set password' option above is enabled. 
+     It also assumes that the site allows vistors to register without approval."),
     '#states' => array(
       // Hide the settings when the cancel notify checkbox is disabled.
       'invisible' => array(':input[name="user_email_verification"]' => array('checked' => FALSE),
@@ -219,8 +236,9 @@ class LogintobogganSettingsForm extends ConfigFormBase {
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
     parent::validateForm($form, $form_state);
-
-    }
+    //stctodo - should check account settings here because it makes no sense to have LT give immediate login with no
+    //mail confirmation whilst account setting is administrator approval required.
+  }
 
   /**
    * {@inheritdoc}

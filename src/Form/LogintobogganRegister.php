@@ -1,14 +1,16 @@
 <?php
 /**
  * @file
- * Contains \Drupal\logintoboggan\Form\LoginToBogganRegister.
+ * Contains \Drupal\logintoboggan\Form\LogintobogganRegister.
  */
 
 namespace Drupal\logintoboggan\Form;
 
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\logintoboggan\Utility\LogintobogganUtility;
+use Drupal\user\Entity\User;
 use Drupal\user\RegisterForm;
-use Drupal\Core\Messenger\MessengerInterface;
+
 
 class LoginToBogganRegister extends RegisterForm {
 
@@ -75,8 +77,6 @@ class LoginToBogganRegister extends RegisterForm {
       $form['account']['pass']['#description'] .= t('Password must be at least %length characters.', array('%length' => $min_pass));
     }
 
-    $stop = '';
-
     return $form;
   }
 
@@ -108,9 +108,10 @@ class LoginToBogganRegister extends RegisterForm {
       $pass = user_password();
     }
 
-    // Set the roles for the new user -- add the pre-auth role if they can pick their own password,
-    // and the pre-auth role isn't anon or auth user.
-    $validating_id = logintoboggan_validating_id();
+
+    //stc-role: we don't need this because by default the user does not get a role unless admin manually assigns it
+    //or user validates.
+    $validating_id = LogintobogganUtility::trustedRole();
     $roles = ($form_state->hasValue('roles') ? array_filter($form_state->getValue('roles')) : array());
     // TODO Reduce number of calls to entityTypeManager()
     $validating_role = \Drupal::entityTypeManager()->getStorage('user_role')->load($validating_id);
@@ -118,7 +119,7 @@ class LoginToBogganRegister extends RegisterForm {
     if (!\Drupal::config('user.settings')->get('verify_mail', TRUE) && ($validating_role->getWeight() > $authenticated_role->getWeight())) {
       $roles[$validating_role->id()] = $validating_role->id();
     }
-    $form_state->setValue('roles', $roles);
+    //$form_state->setValue('roles', $roles);
 
     // Remove unneeded values.
     $form_state->cleanValues();
@@ -128,6 +129,25 @@ class LoginToBogganRegister extends RegisterForm {
 
     parent::submitForm($form, $form_state);
   }
+
+  /**
+   * Form validation handler.
+   *
+   * @param array $form
+   *   An associative array containing the structure of the form.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The current state of the form.
+   */
+  public function validateForm(array &$form, FormStateInterface $form_state) {
+    parent::validateForm($form, $form_state);
+    //Check to see whether our e-mail address matches the confirm address if enabled.
+    if ( \Drupal::config('logintoboggan.settings')->get('confirm_email_at_registration') && $form_state->hasValue('conf_mail')) {
+      if ($form_state->getValue('mail') != $form_state->getValue('conf_mail')) {
+        $form_state->setErrorByName('conf_mail', t('Your e-mail address and confirmed e-mail address must match.'));
+      }
+    }
+  }
+
 
   /**
    * {@inheritdoc}
@@ -142,13 +162,17 @@ class LoginToBogganRegister extends RegisterForm {
     // Assume save has gone through correctly.
     $account->save();
 
+    //stctodo - only difference I can see with this and resend is that re-send loads the account
+    //like this $account = user::load($user);
+
     $form_state->set('user', $account);
     $form_state->setValue('uid', $account->id());
 
     $this->logger('user')->notice('New user: %name %email.', array('%name' => $form_state->getValue('name'), '%email' => '<' . $form_state->getValue('mail') . '>', 'type' => $account->link($this->t('Edit'), 'edit-form')));
 
     // Add plain text password into user account to generate mail tokens.
-    $account->password = $pass;
+    //stctodo - this might be doing something odd to the password used to generate the hash
+    //$account->password = $pass;
 
     // New administrative account without notification.
     $uid = $account->id();
@@ -158,8 +182,10 @@ class LoginToBogganRegister extends RegisterForm {
     }
     // No email verification required; log in user immediately.
     elseif (!$admin && !\Drupal::config('user.settings')->get('verify_mail') && $account->isActive()) {
-      _user_mail_notify('register_no_approval_required', $account);
       user_login_finalize($account);
+      //notify after login so that we get hash based on last login
+      _user_mail_notify('register_no_approval_required', $account);
+
       drupal_set_message($this->t('Registration successful. You are now logged in.'));
       $form_state->setRedirect('<front>');
     }

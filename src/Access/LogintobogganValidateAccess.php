@@ -7,6 +7,7 @@
 
 namespace Drupal\logintoboggan\Access;
 
+use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Routing\Access\AccessInterface as RoutingAccessInterface;
 use Drupal\Core\Session\AccountInterface;
 use Symfony\Component\Routing\Route;
@@ -28,6 +29,16 @@ class LogintobogganValidateAccess implements RoutingAccessInterface {
    * {@inheritdoc}
    */
   public function access(Route $route, Request $request, AccountInterface $account) {
-    return $account->isAuthenticated() && arg(3) < REQUEST_TIME ? static::ALLOW : static::DENY;
+    $path = \Drupal::request()->getpathInfo();
+    $arg = explode('/',$path);
+    $request_time = \Drupal::time()->getRequestTime();
+    $auth = $account->isAuthenticated();
+    //stc-todo this was checking account isAuthenticated: i.e. logged in but that makes no
+    //sense for someone who follows an email link but isn't logged in. So remove isAuthenticated for now
+    //$account->isAuthenticated() &&
+    //wonder if it should be more like a time limit = e.g. 12 hours
+    return $arg[4] < $request_time
+      ? AccessResult::allowed()
+      : AccessResult::forbidden();
   }
 }

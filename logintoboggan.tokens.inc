@@ -34,7 +34,8 @@ function logintoboggan_tokens($type, $tokens, array $data = array(), array $opti
       switch ($name) {
         // Validating URL.
         case 'validate-url':
-          if (variable_get('user_register', USER_REGISTER_VISITORS_ADMINISTRATIVE_APPROVAL) == USER_REGISTER_VISITORS) {
+          $register = Drupal::config('user.settings')->get('register');
+          if ($register == 'visitors') {
             $replacements[$original] = logintoboggan_eml_validate_url($account, $url_options);
           }
           break;

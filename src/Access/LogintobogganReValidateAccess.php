@@ -7,10 +7,12 @@
 
 namespace Drupal\logintoboggan\Access;
 
+use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Routing\Access\AccessInterface as RoutingAccessInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountInterface;
 use Symfony\Component\Routing\Route;
-use Symfony\Component\HttpFoundation\Request;
+use \Drupal\user\Entity\User;
 
 /**
  * Determines access to routes based on login status of current user.
@@ -27,10 +29,13 @@ class LogintobogganReValidateAccess implements RoutingAccessInterface {
   /**
    * {@inheritdoc}
    */
-  public function access(Route $route, Request $request, AccountInterface $account) {
-    $user = user_load(arg(2));
+  public function access(Route $route, RouteMatchInterface $route_match, AccountInterface $account) {
+    $fullpath = \Drupal::service('path.current')->getPath();
+    $path_parts = explode('/', $fullpath);
+    //stc-todo check is path part numeric and loads a user.
+    $user = User::load($path_parts[3]);
     return ($account->id() == $user->id() || $account->hasPermission('administer users'))
-      ? static::ALLOW
-      : static::DENY;
+      ?  AccessResult::allowed()
+      :  AccessResult::forbidden();;
   }
 }

@@ -10,7 +10,7 @@ use Symfony\Component\Validator\ConstraintValidator;
 /**
  * validates that user name that uses email is not using a pre-existing email
  */
-class UserMailNameValidator extends ConstraintValidator {
+class LogintobogganMailNameValidator extends ConstraintValidator {
 
   /**
    * Check that user name is not an email used for another account
@@ -41,7 +41,7 @@ class UserMailNameValidator extends ConstraintValidator {
 
     if($result > 0){
       $this->context->addViolation($constraint->message, []);
-    }
+  }
 
   }
 }

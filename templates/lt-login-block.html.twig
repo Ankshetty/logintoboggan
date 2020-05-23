@@ -1,0 +1,41 @@
+{#
+/**
+ * @file
+ * Default theme implementation to display logintoboggan login block.
+ *
+ *
+ * Available variables:
+ * content.block_type: 0 = standard, 1 = link only, 2 = collapsed
+ * content.message: Optional message.
+ * content.user_login_form: provides form or link depending on block type
+ * content.login_link: provides link for collapsed block (2)
+ *
+ * @see template_preprocess_lt_login_block()
+ *
+ * @ingroup themeable
+ */
+#}
+
+{{ attach_library('logintoboggan/logintoboggan-styles') }}
+
+{% if content.block_type == '2' %}
+  {{ attach_library('logintoboggan/logintoboggan-loginblock') }}
+{% endif %}
+
+<div class="logintoboggan-login-block">
+
+  {% if content.message|trim is not empty %}
+    <h3> {{ content.message }}</h3>
+  {% endif %}
+
+  <div class="logintoboggan-login-form" id="toboggan-login">
+      {{ content.user_login_form }}
+  </div>
+
+  {% if content.block_type == '2' %}
+    <div>
+      {{ content.login_link }}
+    </div>
+  {% endif %}
+
+</div>

@@ -1,8 +1,8 @@
 
 /**
  * This is a custom implementation of user.permissions.js, which is necessary
- * because LoginToboggan needs its pre-auth role to not be explicitly tied to
- * the auth role. The change is minor -- simply exclude the pre-auth role from
+ * because LoginToboggan needs its trusted role to not be explicitly tied to
+ * the auth role. The change is minor -- simply exclude the trusted role from
  * all the auto-checking as the anon and auth user roles are.
  */
 
@@ -38,7 +38,7 @@ Drupal.behaviors.permissions = {
         .attr('title', Drupal.t("This permission is inherited from the authenticated user role."))
         .hide();
 
-      $('input[type=checkbox]', this).not('.rid-2, .rid-1, .rid-' + Drupal.settings.LoginToboggan.preAuthID).addClass('real-checkbox').each(function () {
+      $('input[type=checkbox]', this).not('.rid-2, .rid-1, .rid-' + Drupal.settings.LoginToboggan.trustedID).addClass('real-checkbox').each(function () {
         $dummy.clone().insertAfter(this);
       });
 

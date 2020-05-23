@@ -10,6 +10,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\logintoboggan\Utility\LogintobogganUtility;
 use Drupal\user\Entity\User;
 use Drupal\user\RegisterForm;
+use Drupal\Core\Url;
 
 
 class LoginToBogganRegister extends RegisterForm {
@@ -109,7 +110,7 @@ class LoginToBogganRegister extends RegisterForm {
     }
 
 
-    //stc-role: we don't need this because by default the user does not get a role unless admin manually assigns it
+    //stctodo-role: we don't need this because by default the user does not get a role unless admin manually assigns it
     //or user validates.
     $validating_id = LogintobogganUtility::trustedRole();
     $roles = ($form_state->hasValue('roles') ? array_filter($form_state->getValue('roles')) : array());
@@ -154,7 +155,6 @@ class LoginToBogganRegister extends RegisterForm {
    */
   public function save(array $form, FormStateInterface $form_state) {
     $account = $this->entity;
-    $pass = $account->getPassword();
     $admin = $form_state->getValue('administer_users');
     $notify = !$form_state->isValueEmpty('notify');
 
@@ -162,21 +162,14 @@ class LoginToBogganRegister extends RegisterForm {
     // Assume save has gone through correctly.
     $account->save();
 
-    //stctodo - only difference I can see with this and resend is that re-send loads the account
-    //like this $account = user::load($user);
-
     $form_state->set('user', $account);
     $form_state->setValue('uid', $account->id());
 
     $this->logger('user')->notice('New user: %name %email.', array('%name' => $form_state->getValue('name'), '%email' => '<' . $form_state->getValue('mail') . '>', 'type' => $account->link($this->t('Edit'), 'edit-form')));
 
-    // Add plain text password into user account to generate mail tokens.
-    //stctodo - this might be doing something odd to the password used to generate the hash
-    //$account->password = $pass;
 
     // New administrative account without notification.
     $uid = $account->id();
-    $stop = '';
     if ($admin && !$notify) {
       $this->messenger()->addStatus($this->t('Created a new user account for <a href=":url">%name</a>. No email has been sent.', [':url' => $account->toUrl()->toString(), '%name' => $account->getAccountName()]));
     }
@@ -186,8 +179,18 @@ class LoginToBogganRegister extends RegisterForm {
       //notify after login so that we get hash based on last login
       _user_mail_notify('register_no_approval_required', $account);
 
-      drupal_set_message($this->t('Registration successful. You are now logged in.'));
-      $form_state->setRedirect('<front>');
+      //stctodo - should only send this message if haven't got a setting to set message
+      \Drupal::messenger()->addStatus(t('Registration successful.'));
+
+
+      $redirect_setting = \Drupal::config('logintoboggan.settings')->get('redirect_on_register');
+
+      $redirect_on_register = !empty($redirect_setting) ? $redirect_setting : '/';
+
+      $redirect = _logintoboggan_process_redirect($redirect_on_register, $account);
+
+      $form_state->setRedirectUrl($redirect);
+
     }
     // No administrator approval required.
     elseif ($account->isActive() || $notify) {
@@ -198,10 +201,12 @@ class LoginToBogganRegister extends RegisterForm {
         $op = $notify ? 'register_admin_created' : 'register_no_approval_required';
         if (_user_mail_notify($op, $account)) {
           if ($notify) {
-            drupal_set_message($this->t('A welcome message with further instructions has been emailed to the new user <a href=":url">%name</a>.', array(':url' => $account->url(), '%name' => $account->getUsername())));
+            $this->messenger()->addMessage(t('A welcome message with further instructions
+             has been emailed to the new user <a href=":url">%name</a>.',
+              [':url' => $account->url(), '%name' => $account->get('name')]));
           }
           else {
-            $this->messenger()->addStatus($this->t('A welcome message with further instructions has been sent to your email address.'));//drupal_set_message($this->t('A welcome message with further instructions has been sent to your email address.'));
+            $this->messenger()->addMessage($this->t('A welcome message with further instructions has been sent to your email address.'));//drupal_set_message($this->t('A welcome message with further instructions has been sent to your email address.'));
             $form_state->setRedirect('<front>');
           }
         }
@@ -210,7 +215,9 @@ class LoginToBogganRegister extends RegisterForm {
     // Administrator approval required.
     else {
       _user_mail_notify('register_pending_approval', $account);
-      drupal_set_message($this->t('Thank you for applying for an account. Your account is currently pending approval by the site administrator.<br />In the meantime, a welcome message with further instructions has been sent to your email address.'));
+      $this->messenger()->addMessage(t('Thank you for applying for an account. Your account
+        is currently pending approval by the site administrator..<br />In the meantime, 
+        a welcome message with further instructions has been sent to your email address.'));
       $form_state->setRedirect('<front>');
     }
   }

@@ -1,8 +1,9 @@
+(function ($, Drupal) {
 
-(function ($) {
-  Drupal.behaviors.LoginToboggan = {
+  Drupal.behaviors.loginTobogganloginblock = {
     attach: function (context, settings) {
-      $('#toboggan-login', context).once('toggleboggan_setup', function () {
+
+      $('#toboggan-login', context).once('toggleboggan_setup').each( function () {
         $(this).hide();
         Drupal.logintoboggan_toggleboggan();
       });
@@ -13,10 +14,11 @@
     $("#toboggan-login-link").click(
       function () {
         $("#toboggan-login").slideToggle("fast");
-        this.blur();
+        $(this).blur();
         return false;
       }
     );
   };
-})(jQuery);
+
+})(jQuery, Drupal);
 

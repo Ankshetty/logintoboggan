@@ -183,20 +183,32 @@ class LogintobogganSettingsForm extends ConfigFormBase {
     '#type' => 'textfield',
     '#title' => $this->t('Redirect path on registration'),
     '#default_value' => $config->get('redirect_on_register'),
-    '#description' => $this->t('Normally, after a user registers a new account, they will be taken to the front page, or to their user page if you specify <cite>Immediate login</cite> above. Leave this setting blank if you wish to keep the default behavior. If you wish the user to go to a page of your choosing, then enter the path for it here. For instance, you may redirect them to a static page such as <cite>node/35</cite>, or to the <cite>&lt;front&gt;</cite> page. You may also use <em>%uid</em> as a variable, and the user\'s user ID will be substituted in the path.'),
+    '#description' => $this->t('Normally, after a user registers a new account, 
+       they will be taken to the front page, or to their user page if you specify <cite>Immediate login</cite> above. 
+       Leave this setting blank if you wish to keep the default behavior. If you wish the user to go to a page of your choosing, 
+       then enter the path for it here. For instance, you may redirect them to a static page such as <cite>/node/35</cite>, 
+       or to the <cite>&lt;front&gt;</cite> page. You may also use <em>%uid</em> as a variable, and the user\'s user ID will 
+       be substituted in the path.'),
   );
 
   $form['registration']['redirect']['redirect_on_confirm'] = array(
     '#type' => 'textfield',
     '#title' => $this->t('Redirect path on confirmation'),
     '#default_value' => $config->get('redirect_on_confirm'),
-    '#description' => $this->t('Normally, after a user confirms their new account, they will be taken to their user page. Leave this setting blank if you wish to keep the default behavior. If you wish the user to go to a page of your choosing, then enter the path for it here. For instance, you may redirect them to a static page such as <cite>node/35</cite>, or to the <cite>&lt;front&gt;</cite> page. You may also use <em>%uid</em> as a variable, and the user\'s user ID will be substituted in the path. In the case where users are not creating their own passwords, it is suggested to use <cite>user/%uid/edit</cite> here, so the user may set their password immediately after validating their account.'),
+    '#description' => $this->t('Normally, after a user confirms their new account, they will be taken to their user page. 
+      Leave this setting blank if you wish to keep the default behavior. If you wish the user to go to a page of your choosing, 
+      then enter the path for it here. For instance, you may redirect them to a static page such as <cite>/node/35</cite>, or 
+      to the <cite>&lt;front&gt;</cite> page. You may also use <em>%uid</em> as a variable, and the user\'s user ID will be 
+      substituted in the path. In the case where users are not creating their own passwords, it is suggested to use 
+      <cite>user/%uid/edit</cite> here, so the user may set their password immediately after validating their account.'),
   );
   $form['registration']['redirect']['override_destination_parameter'] = array(
     '#type' => 'checkbox',
     '#title' => $this->t('Override destination parameter'),
     '#default_value' => $config->get('override_destination_parameter'),
-    '#description' => $this->t("Normally, when a Drupal redirect is performed, priority is given to the 'destination' parameter from the originating URL. With this setting enabled, LoginToboggan will attempt to override this behavior with any values set above."),
+    '#description' => $this->t("Normally, when a Drupal redirect is performed, priority is given to the 'destination' 
+      parameter from the originating URL. With this setting enabled, LoginToboggan will attempt to override this behavior with any 
+      values set above."),
   );
 
   $form['other'] = array(
@@ -236,15 +248,30 @@ class LogintobogganSettingsForm extends ConfigFormBase {
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
     parent::validateForm($form, $form_state);
+    $stop = '';
     //stctodo - should check account settings here because it makes no sense to have LT give immediate login with no
     //mail confirmation whilst account setting is administrator approval required.
+    //stctodo - check that redirects start with a / this also prevents external redirects, which would make no sense
+    //If immediate login is set but not visitor can self-register set an error.
+    if (\Drupal::config('user.settings')->get('register') != 'visitor' && $form_state->getValue('immediate_login_on_register')) {
+      $form_state->setErrorByName('immediate_login_on_register', $this->t('The main account settings do
+       not allow visitors to register without admin approval but Logintoboggan is set for immediate login. 
+       You must switch to visitor registration to use immediate login'));
+    }
+    $redirect_register = $form_state->getValue('redirect_on_register');
+    if (!empty($redirect_register) && substr($redirect_register, 0, 1) != '/') {
+      $form_state->setErrorByName('redirect_on_register', $this->t('redirects must start with a forward slash: e.g. /node/1'));
+    }
+    $redirect_confirm = $form_state->getValue('redirect_on_confirm');
+    if (!empty($redirect_confirm) && substr($redirect_confirm, 0, 1) != '/') {
+      $form_state->setErrorByName('redirect_on_confirm', $this->t('redirects must start with a forward slash: e.g. /node/1'));
+    }
   }
 
   /**
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-//    $config = $this->configFactory->get('logintoboggan.settings');
     parent::submitForm($form, $form_state);
     $config = $this->config('logintoboggan.settings');
     foreach ($form_state->getValues() as $key => $value) {

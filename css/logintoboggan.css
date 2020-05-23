@@ -1,0 +1,28 @@
+
+
+/* login block  */
+.logintoboggan-login-block {
+  text-align: left;
+}
+
+.logintoboggan-login-block h3 {
+  font-size: 1.5em;
+}
+
+
+/* Unified login */
+
+.toboggan-unified #login-links {
+  font-size: 1.5em;
+  line-height: 2.7;
+}
+
+.toboggan-unified #login-links button.lt-active,
+.toboggan-unified #login-links button:hover {
+  background-color: #FFF19A;
+  border: 1px #333 solid;
+}
+
+
+
+

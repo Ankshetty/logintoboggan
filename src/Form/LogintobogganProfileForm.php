@@ -26,7 +26,13 @@ class LogintobogganProfileForm extends ProfileForm {
    * {@inheritdoc}
    */
   public function form(array $form, FormStateInterface $form_state) {
+
+
+
     $form = parent::form($form, $form_state);
+
+
+
 
     //add a revalidate link for users who are not yet in the trusted role
     $trusted_role = LogintobogganUtility::trustedRole();
@@ -69,7 +75,14 @@ class LogintobogganProfileForm extends ProfileForm {
       }
     }
 
-
+    //let user know the password length
+    $min_pass_length = \Drupal::config('logintoboggan.settings')->get('minimum_password_length');
+    if($min_pass_length != '0') {
+      $description = $form['account']['pass']['#description'];
+      $original = $description->render();
+      $pass_message = $original . t('<br>The minimum length for the password is %min characters.', ['%min' => $min_pass_length]);
+      $form['account']['pass']['#description'] = $pass_message;
+    }
 
 
     return $form;
@@ -103,7 +116,6 @@ class LogintobogganProfileForm extends ProfileForm {
       if (in_array($trusted_role, $new_roles) && $trusted == '0') {
         //send email
         _user_mail_notify('status_activated', $account);
-        $stop = '';
       }
 
     }

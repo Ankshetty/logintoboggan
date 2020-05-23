@@ -6,20 +6,20 @@
 INSTALLATION:
 
 Place entire loggintoboggan module folder into
-  (a) your sites/all/modules directory
+  (a) your /modules/contrib directory
   (b) your sites/[my site]/modules directory.
 
 Enable the module at Administration » Modules
 
 Configure logintoboggan settings at
-Administration » Configuration » System » LoginToboggan
+Administration » Configuration » People » LoginToboggan
 
-The module changes the functionality of the login block AND provides a new
+The module provides an alternative login block to core AND provides a new
 LoginToboggan logged in block'.
 
 Configure each block at Administration » Structure » Blocks as follows...
 
-1. Configure the 'User login' block for LoginToboggan functionality:
+1. Configure the 'Logintoboggan login' block for LoginToboggan functionality:
 
 Change title if required; using <none> can make for a very neat login system,
 when combined with the javascript functionality: clicking upon "Login/register"
@@ -43,20 +43,21 @@ CAVEATS:
    to your user data -- specifically deleting users!  Two things to guard
    against:
 
-     a. Be very careful when editing the 'Non-authenticated role' setting.
+     a. Be very careful when editing the 'trusted role' setting.
         If you set it to anything other than the 'authenticated user' role,
-        LoginToboggan will happily start deleting any users you have in that
-        role that were created prior to the purge interval. If you want to
+        LoginToboggan will happily start deleting any users that don't have that
+        role and were created prior to the purge interval. If you want to
         avoid problems, it's best to never change that setting after you've
         initially set it up.
 
-     b. LoginToboggan has mechanisms in place that prevent a user from being
-        re-added to the Non-authenticated role after a user has been validated.
-        Note that these protections are only present in core's interface -- if
-        you have another module enabled which does any role manipulation
-        (either via the user interface or programatically), you must find your
-        own way to ensure that it doesn't add any users back into the
-        Non-authenticated role.
+     b. LoginToboggan provides a trusted role that is assigned in addition to
+        the authenticated user role. In Drupal 7, it worked the other way round
+        in that it removed the authenticated role under a user validated via email.
+        However, that's not possible in Drupal 8 because the authenticated role is
+        automatically assumed for all logged-in users. Be aware that other contrib modules
+        may want to assign permissions to authenticated users so it will be your
+        ongoing responsibility as a site manager to remove unwanted permissions from
+        the authenticated role, if you have adopted the trusted role approach.
 
    Also note that the feature is only enabled if the 'Set password' option is
    also enabled.

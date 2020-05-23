@@ -1,0 +1,21 @@
+logintoboggan-styles:
+  css:
+    theme:
+      css/logintoboggan.css: {}
+
+logintoboggan_unified:
+  version: 1.x
+  js:
+    js/logintoboggan.unifiedlogin.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupalSettings
+
+logintoboggan-loginblock:
+  version: 1.x
+  js:
+    js/logintoboggan.loginblock.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupal
+    - core/jquery.once

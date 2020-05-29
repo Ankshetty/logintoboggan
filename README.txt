@@ -4,7 +4,12 @@
 *******************************************************
 
 Co-developed by Jeff Robbins (jjeff) and Chad Phillips (hunmonk) with several
-features added by Raven Brooks (rbrooks00).
+features added by Raven Brooks (rbrooks00). The Drupal 8 version retains most
+the functionality provided in Drupal 7, although for now it does not support some
+contributed sub modules such as Rules, Variable, and Content Access. There is also a
+major change in functionality in how it handles a special role for new users. Instead
+of removing the authenticated used role until an email validation has been received, it
+provides for a new 'trusted' role that gets added once validation is complete.
 
 The Login Toboggan module improves the Drupal login system in an external
 module by offering the following features:
@@ -31,10 +36,12 @@ module by offering the following features:
       (please read the CAVEATS section of INSTALL.txt for important information
        on configuring this feature!).
 
-Users who choose their own password can be automatically assigned to a selected
-'non-authenticated' role. This role could have more permissions than anonymous
-but less than authenticated - thus preventing spoof accounts and spammers. The
-user will only be removed from the non-authenticated role and granted
-authenticated permissions when they verify their account via a special email
-link, or when an administrator removes them from the non-authenticated role.
+Users who choose their own password will automatically be assigned Drupal's authenticated
+role. This is core functionality and cannot be reliably altered. So, Logintoboggan now
+provides a new 'trusted' role. Once a user validates via email, that role will get applied.
+If this feature is used, a site administrator can give authenticated users a limited set of
+permissions and can provide a fuller set of permissions to the trusted user. Administrators
+should bear in mind that other contrib modules may assume that it's safe to assign permissions
+to the authenticated user role. This means there will be an ongoing need to monitor permissions
+in order to avoid giving unwanted permissions to a user who has not yet validated email.
 

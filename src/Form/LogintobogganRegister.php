@@ -101,14 +101,10 @@ class LoginToBogganRegister extends RegisterForm {
 
     if (!\Drupal::config('user.settings')->get('verify_mail') || $admin) {
       $pass = $form_state->getValue('pass');
-      if(\Drupal::config('logintoboggan.settings')->get('immediate_login_on_register')) {
-        $form_state->setValue('status', 1);
-      }
     }
     else {
       $pass = user_password();
     }
-
 
     //stctodo-role: we don't need this because by default the user does not get a role unless admin manually assigns it
     //or user validates.
@@ -120,7 +116,7 @@ class LoginToBogganRegister extends RegisterForm {
     if (!\Drupal::config('user.settings')->get('verify_mail', TRUE) && ($validating_role->getWeight() > $authenticated_role->getWeight())) {
       $roles[$validating_role->id()] = $validating_role->id();
     }
-    //$form_state->setValue('roles', $roles);
+
 
     // Remove unneeded values.
     $form_state->cleanValues();
@@ -168,26 +164,26 @@ class LoginToBogganRegister extends RegisterForm {
     $this->logger('user')->notice('New user: %name %email.', array('%name' => $form_state->getValue('name'), '%email' => '<' . $form_state->getValue('mail') . '>', 'type' => $account->link($this->t('Edit'), 'edit-form')));
 
 
+    $immediate = \Drupal::config('logintoboggan.settings')->get('immediate_login_on_register');
+
     // New administrative account without notification.
-    $uid = $account->id();
     if ($admin && !$notify) {
       $this->messenger()->addStatus($this->t('Created a new user account for <a href=":url">%name</a>. No email has been sent.', [':url' => $account->toUrl()->toString(), '%name' => $account->getAccountName()]));
     }
-    // No email verification required; log in user immediately.
-    elseif (!$admin && !\Drupal::config('user.settings')->get('verify_mail') && $account->isActive()) {
+    // No email verification required and immediate login switch on; log in user immediately.
+    elseif (!$admin && !\Drupal::config('user.settings')->get('verify_mail') && $account->isActive() && $immediate == '1') {
       user_login_finalize($account);
       //notify after login so that we get hash based on last login
       _user_mail_notify('register_no_approval_required', $account);
 
-      //stctodo - should only send this message if haven't got a setting to set message
       \Drupal::messenger()->addStatus(t('Registration successful.'));
-
 
       $redirect_setting = \Drupal::config('logintoboggan.settings')->get('redirect_on_register');
 
       $redirect_on_register = !empty($redirect_setting) ? $redirect_setting : '/';
 
-      $redirect = _logintoboggan_process_redirect($redirect_on_register, $account);
+      //$redirect = _logintoboggan_process_redirect($redirect_on_register, $account);
+      $redirect = LogintobogganUtility::processRedirect($redirect_on_register, $account);
 
       $form_state->setRedirectUrl($redirect);
 

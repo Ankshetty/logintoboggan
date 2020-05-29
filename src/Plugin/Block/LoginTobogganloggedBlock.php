@@ -30,6 +30,9 @@ class LoginTobogganloggedBlock extends BlockBase {
     $page = array(
       '#theme' => 'lt_loggedinblock',
       '#account' => $user,
+      '#cache' => [
+        'max-age' => 0,
+      ],
     );
     return $page;
   }

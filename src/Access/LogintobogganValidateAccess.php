@@ -33,10 +33,6 @@ class LogintobogganValidateAccess implements RoutingAccessInterface {
     $arg = explode('/',$path);
     $request_time = \Drupal::time()->getRequestTime();
     $auth = $account->isAuthenticated();
-    //stc-todo this was checking account isAuthenticated: i.e. logged in but that makes no
-    //sense for someone who follows an email link but isn't logged in. So remove isAuthenticated for now
-    //$account->isAuthenticated() &&
-    //wonder if it should be more like a time limit = e.g. 12 hours
     return $arg[4] < $request_time
       ? AccessResult::allowed()
       : AccessResult::forbidden();

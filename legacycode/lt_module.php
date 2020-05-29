@@ -2,8 +2,8 @@
 
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Session\AccountInterface;
-use Drupal\Core\Url;
 use Drupal\logintoboggan\Utility\LogintobogganUtility;
+use Drupal\user\Entity\User;
 
 
 /**
@@ -12,7 +12,6 @@ use Drupal\logintoboggan\Utility\LogintobogganUtility;
  * @ingroup logintoboggan_form
  */
 function _logintoboggan_user_register_submit($form, FormStateInterface $form_state) {
-  //stctodo - this should move to the form controller.
   $reg_pass_set = !\Drupal::config('user.settings')->get('verify_mail', TRUE);
 
   $entity = $form_state->getFormObject();
@@ -78,13 +77,13 @@ function _logintoboggan_user_register_submit($form, FormStateInterface $form_sta
   }
 
   // Mail the user.
-  //stctodo - this needs to be done after account has been created because at this point is has no uid and fails
+  // - this needs to be done after account has been created because at this point is has no uid and fails
   //_user_mail_notify($mailkey, $account); //@TODO correctly detect the preferred language instead of enforcing 'en'.
 
   drupal_set_message($message);
 
   // where do we need to redirect after registration?
-  //stctodo = $acccount has no uid at this point so the redirect function can't work
+  //$acccount has no uid at this point so the redirect function can't work
   $redirect = _logintoboggan_process_redirect(\Drupal::config('logintoboggan.settings')->get('redirect_on_register'), $account);
   // Log the user in if they created the account and immediate login is enabled.
   if($reg_pass_set && \Drupal::config('logintoboggan.settings')->get('immediate_login_on_register')) {
@@ -123,7 +122,7 @@ function _logintoboggan_menu_get_item_alter() {
  * This alteration is required because sess_read() and user_load() automatically set the
  * authenticated user role for all non-anonymous users (see http://drupal.org/node/92361).
  *
- * stctodo - this is now irrelevant because a role doesn't get applied until validation
+ * this is now irrelevant because a role doesn't get applied until validation
  *
  * @param &$account
  *    User account to have roles adjusted.
@@ -148,7 +147,7 @@ function _logintoboggan_user_roles_alter($account) {
  * This alteration is required because sess_read() and user_load() automatically set the
  * authenticated user role for all non-anonymous users (see http://drupal.org/node/92361).
  *
- * stctodo - this is now irrelevant because a role doesn't get applied until validation
+ * this is now irrelevant because a role doesn't get applied until validation
  *
  * @param &$account
  *    User account to have roles adjusted.
@@ -158,14 +157,11 @@ function _logintoboggan_user_roles_alter($account) {
 /**
  * Implement hook_form_user_register_form_alter().
  *
- * stctodo - this is obsolete but want to do some further tests on registration to be sure
  *
  * @ingroup logintoboggan_core
  */
 function _logintoboggan_form_user_register_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
   // Admin created accounts are only validated by the module
-
-
 
   $user = \Drupal::currentUser();
   if ($user->hasPermission('administer users')) {
@@ -192,7 +188,7 @@ function _logintoboggan_form_user_register_form_alter(&$form, \Drupal\Core\Form\
 
 /**
  *
- * stctodo- this generates a link to a controller for validating but it has a
+ * this generates a link to a controller for validating but it has a
  * problem if users is pending approval because user will be blocked so the function
  * that adds the trusted role will not actually apply it. Would need to either have a
  * separate function that can evaluate whether the admin user is logged-in, and if so unblock
@@ -222,7 +218,7 @@ function logintoboggan_mail_alter(&$message) {
  * submit function for pass reset - not used due to change away from pre auth role
  */
 function logintoboggan_pass_reset($form, $form_state) {
-  $stop = '';
+
 }
 
 /**
@@ -232,5 +228,49 @@ function logintoboggan_pass_reset($form, $form_state) {
 function _logintoboggan_protocol() {
   return ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') ? 'https' : 'http');
 }
+
+
+/**
+ * hook no longer exists and don't think it's helpful given that we can't know the
+ * regions on a page reliably.
+ *
+ * Implement hook_page_alter().
+ */
+function logintoboggan_page_alter(&$page) {
+  // Remove blocks on access denied pages.
+  if (isset($page['#logintoboggan_denied'])) {
+    drupal_set_message(t('Access denied. You may need to login below or register to access this page.'), 'error');
+    // Allow overriding the removal of the sidebars, since there's no way to
+    // override this in the theme.
+    if (\Drupal::config('logintoboggan.settings')
+      ->get('denied_remove_sidebars', TRUE)) {
+      unset($page['sidebar_first'], $page['sidebar_second']);
+    }
+  }
+}
+
+/**
+ *
+ * Add trusted role to new user when validating from an email link.
+ *
+ * @param $account
+ *
+ */
+function _logintoboggan_process_validation($account) {
+  $trusted_role = LogintobogganUtility::trustedRole();
+  //core mail verification not required and trusted <> authenticated so add the role
+  $trusted_used = !\Drupal::config('user.settings')->get('verify_mail') && $trusted_role != AccountInterface::AUTHENTICATED_ROLE;
+  if (!$account->isBlocked()) {
+    if ($trusted_used) {
+      $account->addRole($trusted_role);
+      $account->save();
+    }
+  }
+}
+
+
+
+
+
 
 

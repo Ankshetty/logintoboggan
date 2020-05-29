@@ -32,7 +32,6 @@ class LogintobogganReValidateAccess implements RoutingAccessInterface {
   public function access(Route $route, RouteMatchInterface $route_match, AccountInterface $account) {
     $fullpath = \Drupal::service('path.current')->getPath();
     $path_parts = explode('/', $fullpath);
-    //stc-todo check is path part numeric and loads a user.
     $user = User::load($path_parts[3]);
     return ($account->id() == $user->id() || $account->hasPermission('administer users'))
       ?  AccessResult::allowed()

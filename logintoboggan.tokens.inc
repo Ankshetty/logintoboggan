@@ -5,6 +5,8 @@
  * Builds placeholder replacement tokens for logintoboggan-related data.
  */
 
+use Drupal\logintoboggan\Utility\LogintobogganUtility;
+
 /**
  * Implements hook_token_info().
  */
@@ -36,7 +38,7 @@ function logintoboggan_tokens($type, $tokens, array $data = array(), array $opti
         case 'validate-url':
           $register = Drupal::config('user.settings')->get('register');
           if ($register == 'visitors') {
-            $replacements[$original] = logintoboggan_eml_validate_url($account, $url_options);
+            $replacements[$original] = LogintobogganUtility::emlValidateUrl($account, $url_options);
           }
           break;
       }

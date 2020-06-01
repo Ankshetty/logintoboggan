@@ -46,15 +46,13 @@ class LogintobogganController extends ControllerBase {
       \Drupal::logger('user')->notice('E-mail validation URL used for %name with timestamp @timestamp.',
         ['%name' => $account->getAccountName(), '@timestamp' => $timestamp]);
 
-      //_logintoboggan_process_validation($account);
+      //Set trusted role
       LogintobogganUtility::processValidation($account);
 
       // Where do we redirect after confirming the account
-      $redirect_setting = \Drupal::config('logintoboggan.settings')->get('redirect_on_register');
+      $redirect_setting = \Drupal::config('logintoboggan.settings')->get('redirect_on_confirm');
       $redirect_on_register = !empty($redirect_setting) ? $redirect_setting : '/';
-
       $redirect = LogintobogganUtility::processRedirect($redirect_on_register, $account);
-      //$redirect = _logintoboggan_process_redirect($redirect_on_register, $account);
 
       switch ($operation) {
         // Proceed with normal user login, as long as it's open registration and their
@@ -71,7 +69,7 @@ class LogintobogganController extends ControllerBase {
 
           }
           else {
-            //$redirect = logintoboggan_process_login($account, $redirect);
+            $redirect = logintoboggan_process_login($account, $redirect);
             return new RedirectResponse($redirect->toString());
           }
           break;

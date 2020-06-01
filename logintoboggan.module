@@ -115,14 +115,26 @@ function logintoboggan_help($route_name, RouteMatchInterface $route_match) {
       <li>Optionally redirect the user to a specific page upon validation of their e-mail address.</li>
       <li>Optionally display a user message indicating a successful login.</li>
       <li>Optionally combine both the login, registration and password reset forms on one page.</li>
-      <li>Optionally have unvalidated users purged from the system at a pre-defined interval (please read the CAVEATS section of INSTALL.txt for important information on configuring this feature!).</li>
+      <li>Optionally have unvalidated users purged from the system at a pre-defined interval 
+      (please read the CAVEATS section of INSTALL.txt for important information on configuring this feature!).</li>
       </ol>
       These features may be turned on or off in the Login Toboggan <a href=\":url\">settings</a>.</p>
-      <p>Because this module completely reorients the Drupal login process you will probably want to edit the welcome e-mail on the <a href=\":user_settings\">user settings</a> page. Note when the 'Set password' option is enabled, the [user:validate-url] token becomes a verification url that the user MUST visit in order to enable authenticated status). The following is an example welcome e-mail:</p>
-      ", array(':url' => Url::fromRoute('logintobogganform.settings')->toString(), ':user_settings' => Url::fromRoute('entity.user.admin_form')->toString()));
+      <p>Because this module completely reorients the Drupal login process you will probably want to edit the 
+      welcome e-mail on the <a href=\":user_settings\">user settings</a> page. Note when the 'Set password' option 
+      is enabled, the [user:validate-url] token becomes a verification url that the user MUST visit in order to 
+      get the trusted role). The following is an example welcome e-mail:</p> ===<br>", array(':url' => Url::fromRoute('logintobogganform.settings')->toString(), ':user_settings' => Url::fromRoute('entity.user.admin_form')->toString()));
       $example_help_form = \Drupal::formBuilder()->getForm('\Drupal\logintoboggan\Form\LogintobogganHelpForm');
       $output .=  \Drupal::service('renderer')->render($example_help_form);
-      $output .= t("<p>Note that if you have set the 'Visitors can create accounts but administrator approval is required' option for account approval, and are also using the 'Set password' feature of LoginToboggan, the user will immediately receive the permissions of the pre-authorized user role. LoginToboggan prevents the pre-authorized role from automatically inheriting the authorized role permissions. You may wish to create a pre-authorized role with the exact same permissions as the anonymous user if you wish the newly created user to only have anonymous permissions.</p><p>In order for a site administrator to unblock a user who is awaiting administrator approval, they must either click on the validation link they receive in their notification e-mail, or manually remove the user from the site's pre-authorized role -- afterwards the user will then receive 'authenticated user' permissions. In either case, the user will receive an account activated e-mail if it's enabled on the user settings page -- it's recommended that you edit the default text of the activation e-mail to match LoginToboggan's workflow as described. </p><p>If you are using the 'Visitors can create accounts and no administrator approval is required' option, removal of the pre-authorized role will happen automatically when the user validates their account via e-mail.</p><p>Also be aware that LoginToboggan only affects registrations initiated by users--any user account created by an administrator will not use any LoginToboggan functionality.");
+      $output .=  t("===<p>Note that if you have set the 'Visitors can create accounts but administrator approval is required' 
+        option for account approval, and are also using the 'Set password' feature of LoginToboggan, the user will immediately receive the permissions of the authenticated user role. 
+        LoginToboggan provides for a trusted role that automatically inherits the authenticated role permissions. 
+        You may wish to give that role extra permissions and restricted the authenticated role to the same permissions as the anonymous user role.</p>
+        <p>In order for a site administrator to unblock a user who is awaiting administrator approval, they must either click on the validation link they receive in their notification e-mail, or 
+        manually add the trusted role to that user. In either case, the user will receive an account activated e-mail if it's enabled on the user settings page
+         -- it's recommended that you edit the default text of the activation e-mail to match LoginToboggan's workflow as described. </p
+         ><p>If you are using the 'Visitors can create accounts and no administrator approval is required' option, addition of the trusted role will happen automatically 
+         when the user validates via e-mail link.</p><p>Also be aware that LoginToboggan only affects registrations initiated by users--any user account created 
+         by an administrator will not use any LoginToboggan functionality.</p>");
       return $output;
       break;
   }
@@ -190,13 +202,18 @@ function logintoboggan_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $
       // Disable the checkbox at the Account settings page which controls
       // whether e-mail verification is required upon registration or not.
       // The LoginToboggan module implements e-mail verification functionality
-      // differently than core, and will control wether e-mail verification is
+      // differently than core, and will control whether e-mail verification is
       // required or not.
-      $form['registration_cancellation']['user_email_verification']['#disabled'] = true;
-      $form['registration_cancellation']['user_email_verification']['#description'] = t('This setting has been 
+      if (\Drupal::config('logintoboggan.settings')->get('user_email_verification') == '1') {
+        $form['registration_cancellation']['user_email_verification']['#disabled'] = TRUE;
+        $form['registration_cancellation']['user_email_verification']['#description'] = t('This setting has been 
       locked by Logintoboggan.
       You can change this setting by modifying the <strong>Set password</strong> checkbox 
-      at <a href=":link">LoginToboggan settings page</a>.', array(':link' => Url::fromRoute('logintobogganform.settings')->toString()));
+      at <a href=":link">LoginToboggan settings page</a>.', [
+          ':link' => Url::fromRoute('logintobogganform.settings')
+            ->toString()
+        ]);
+      }
       break;
   }
 }
@@ -284,7 +301,7 @@ function logintoboggan_user_login_validate($form, &$form_state) {
 
 
 /**
- * Implemenation of hook_theme().
+ * Implementation of hook_theme().
  *
  * @ingroup logintoboggan_core
  */

@@ -182,7 +182,6 @@ class LoginToBogganRegister extends RegisterForm {
 
       $redirect_on_register = !empty($redirect_setting) ? $redirect_setting : '/';
 
-      //$redirect = _logintoboggan_process_redirect($redirect_on_register, $account);
       $redirect = LogintobogganUtility::processRedirect($redirect_on_register, $account);
 
       $form_state->setRedirectUrl($redirect);

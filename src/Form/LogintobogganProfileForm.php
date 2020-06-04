@@ -1,12 +1,6 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\logintoboggan\Form\LogintobogganProfileForm.
- */
-
 namespace Drupal\logintoboggan\Form;
-
 
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\user\ProfileForm;
@@ -16,10 +10,7 @@ use Drupal\Component\Utility\UrlHelper;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\logintoboggan\Utility\LogintobogganUtility;
 
-
-
 class LogintobogganProfileForm extends ProfileForm {
-
 
 
   /**

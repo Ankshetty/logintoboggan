@@ -1,6 +1,0 @@
-name = "LoginToboggan Rules Integration"
-description = "Integrates LoginToboggan with Rules module"
-core = "7.x"
-
-dependencies[] = logintoboggan
-dependencies[] = rules

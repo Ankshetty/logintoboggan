@@ -2,7 +2,6 @@
 
 namespace Drupal\logintoboggan\Utility;
 
-
 use Drupal\Component\Utility\UrlHelper;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Url;
@@ -63,7 +62,6 @@ class LogintobogganUtility {
   }
 
   /**
-   *
    * Add trusted role to new user when validating from an email link.
    *
    * @param $account
@@ -72,7 +70,8 @@ class LogintobogganUtility {
   public static function processValidation($account) {
     $trusted_role = self::trustedRole();
     //core mail verification not required and trusted <> authenticated so add the role
-    $trusted_used = !\Drupal::config('user.settings')->get('verify_mail') && $trusted_role != AccountInterface::AUTHENTICATED_ROLE;
+    $trusted_used = !\Drupal::config('user.settings')->get('verify_mail') &&
+      $trusted_role != AccountInterface::AUTHENTICATED_ROLE;
     if (!$account->isBlocked()) {
       if ($trusted_used) {
         $account->addRole($trusted_role);

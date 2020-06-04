@@ -36,8 +36,7 @@ function logintoboggan_cron() {
   // If set password is enabled, and a purge interval is set, check for unvalidated users to purge.
   if (($purge_interval = \Drupal::config('logintoboggan.settings')->get('purge_unvalidated_user_interval'))
     && Drupal::config('logintoboggan.settings')->get('user_email_verification')) {
-    // As a safety check, make sure that we have a non-core role as the
-    // trusted role -- otherwise skip.
+    // As a safety check, make sure that we have a non-core role as the trusted role -- otherwise skip.
     $anon_role = User::ANONYMOUS_ROLE;
     $auth_role = User::AUTHENTICATED_ROLE;
     $trusted_role = LogintobogganUtility::trustedRole();
@@ -45,53 +44,35 @@ function logintoboggan_cron() {
     if (!in_array($trusted_role, array($anon_role, $auth_role))) {
       $request_time = \Drupal::time()->getRequestTime();
       $purge_time = $request_time - $purge_interval;
-
       $connection = Database::getConnection();
+      $no_role = [];
 
-      $query = $connection->select('user__roles', 'r');
-      $query->innerJoin('users_field_data', 'u', 'u.uid = r.entity_id');
+      $query = $connection->select('users_field_data', 'u');
+      $query->leftJoin('user__roles', 'r', 'u.uid = r.entity_id');
+      $query->fields('u', ['uid']);
       $query->fields('r', ['entity_id']);
-      $query->condition('roles_target_id', '1', '=');
+      $query->isNull('entity_id');
+      $query->condition('uid', '0', '<>');
       $query->condition('created', $purge_time, '<');
-      $result = $query->execute()->fetchAll();
-      foreach($result as $k => $v) {
-        $non_trusted[] = $v->entity_id;
+      $res_query = $query->execute()->fetchAll();
+      foreach($res_query as $k => $v){
+        $no_role[] = $v->uid;
       }
 
-      $query_2 = $connection->select('user__roles', 'r');
-      $query_2->innerJoin('users_field_data', 'u', 'u.uid = r.entity_id');
-      $query_2->fields('r', ['entity_id']);
-      $query_2->condition('roles_target_id', $trusted_role, '=');
-      $query_2->condition('created', $purge_time, '<');
-      $result_trusted = $query_2->execute()->fetchAll();
-      foreach($result_trusted as $k => $v) {
-        $trusted[] = $v->entity_id;
-      }
-
-      //overlaps are users with both role '1' and trusted user
-      $got_both = array_intersect($non_trusted, $trusted);
-
-      //build an array of uids that are not trusted and do not have trusted role
-      $delete_users = [];
-      foreach($non_trusted as $k => $v) {
-        if (!in_array($v, $got_both)) {
-          $delete_users[] = $v;
+      if (!empty($no_role)) {
+        $purged_users = [];
+        $users = User::loadMultiple($no_role);
+        foreach ($users as $u) {
+          $purged_users[] = $u->getAccountName();
         }
-      }
+        $purged_users_list = join(', ', $purged_users);
+        user_delete_multiple($no_role);
 
-      $purged_users = [];
-      $users = User::loadMultiple($delete_users);
-      foreach($users as $u){
-        $purged_users[] = $u->getAccountName();
-      }
-      $purged_users_list = join(', ', $purged_users);
+        // Log the purged users.
+        if (!empty($purged_users)) {
+          \Drupal::logger('logintoboggan')->notice( 'Following unvalidated users removed: %purged', ['%purged' => $purged_users_list]);
+        }
 
-      // Delete the users from the system.
-      user_delete_multiple($delete_users);
-
-      // Log the purged users.
-      if (!empty($purged_users)) {
-        \Drupal::logger('logintoboggan')->notice( 'Following unvalidated users removed: %purged', ['%purged' => $purged_users_list]);
       }
     }
   }

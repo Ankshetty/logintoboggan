@@ -1,8 +1,4 @@
 <?php
-/**
- * @file
- * Contains \Drupal\logintoboggan\Controller\LogintobogganController.
- */
 
 namespace Drupal\logintoboggan\Controller;
 
@@ -12,7 +8,6 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Drupal\Core\Controller\ControllerBase;
 use \Drupal\user\Entity\User;
 use Drupal\Core\Url;
-
 
 class LogintobogganController extends ControllerBase {
 
@@ -27,26 +22,20 @@ class LogintobogganController extends ControllerBase {
     $account = user::load($user);
     $cur_account = \Drupal::currentUser();
 
-    //stctodo - it's possible that the site doesn't bother with the trusted role
-    //so this immediate login logic is maybe wrong. What I need to know next is whether there's a flag on the
-    //account provided by core that indicates account is not authorised. Otherwise, if no trusted role
-    //is provided we don't know whether validation happened. Also, what happens if you login with an
-    //email and then just change it.
+    //if you don't need to verify email (i.e. can set password), that's effectively ok for immediate login
     $immediate_login = !\Drupal::config('user.settings')->get('verify_mail');
-
-
-    // No time out for first time login
-    // This conditional checks that:
-    // - the user can login without verifying email first
+    // Does have to verify but has not logged in previously OR
+    // the user can login without verifying email first
     // - the hashed password is correct.
     if (((\Drupal::config('user.settings')->get('verify_mail')
       && !$account->getLastLoginTime()) || ($immediate_login))
       && $hashed_pass == user_pass_rehash($account, $timestamp)) {
 
-      \Drupal::logger('user')->notice('E-mail validation URL used for %name with timestamp @timestamp.',
+      \Drupal::logger('user')->notice('E-mail validation URL used for %name with 
+      timestamp @timestamp.',
         ['%name' => $account->getAccountName(), '@timestamp' => $timestamp]);
 
-      //Set trusted role
+      //add trusted role
       LogintobogganUtility::processValidation($account);
 
       // Where do we redirect after confirming the account
@@ -121,11 +110,6 @@ class LogintobogganController extends ControllerBase {
    */
   public function logintobogganResendValidation($user) {
     $account = user::load($user);
-    /**************************************************************************
-    $account->setPassword() = t('If required, you may reset your password from: !url', array(
-      '!url' => url('user/password', array('absolute' => TRUE)),
-    ));
-    /**************************************************************************/
     _user_mail_notify('register_no_approval_required', $account);
 
     // Notify admin or user that e-mail was sent and return to user edit form.
@@ -155,7 +139,6 @@ class LogintobogganController extends ControllerBase {
         '#theme' => 'lt_access_denied',
       );
     }
-
     return $page;
   }
 }

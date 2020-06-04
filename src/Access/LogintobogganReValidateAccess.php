@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\logintoboggan\Access\LogintobogganReValidateAccess.
- */
-
 namespace Drupal\logintoboggan\Access;
 
 use Drupal\Core\Access\AccessResult;

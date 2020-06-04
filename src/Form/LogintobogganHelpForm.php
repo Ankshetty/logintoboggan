@@ -1,8 +1,4 @@
 <?php
-/**
- * @file
- * Contains \Drupal\logintoboggan\Form\LogintobogganHelpForm.
- */
 
 namespace Drupal\logintoboggan\Form;
 
@@ -11,6 +7,7 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Extension\ModuleHandler;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Form\FormStateInterface;
+
 /**
  * Configure search settings for this site.
  */

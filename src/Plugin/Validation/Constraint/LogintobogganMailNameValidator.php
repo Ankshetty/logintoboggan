@@ -6,7 +6,6 @@ use Drupal\Core\Database\Database;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 
-
 /**
  * validates that user name that uses email is not using a pre-existing email
  */

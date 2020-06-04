@@ -1,8 +1,4 @@
 <?php
-/**
- * @file
- * Contains \Drupal\logintoboggan\Form\LogintobogganRegister.
- */
 
 namespace Drupal\logintoboggan\Form;
 
@@ -11,7 +7,6 @@ use Drupal\logintoboggan\Utility\LogintobogganUtility;
 use Drupal\user\Entity\User;
 use Drupal\user\RegisterForm;
 use Drupal\Core\Url;
-
 
 class LoginToBogganRegister extends RegisterForm {
 
@@ -32,8 +27,6 @@ class LoginToBogganRegister extends RegisterForm {
     );
 
     $form['#attached']['library'][] = 'core/drupal.form';
-
-
 
     // For non-admin users, populate the form fields using data from the
     // browser.
@@ -106,17 +99,6 @@ class LoginToBogganRegister extends RegisterForm {
       $pass = user_password();
     }
 
-    //stctodo-role: we don't need this because by default the user does not get a role unless admin manually assigns it
-    //or user validates.
-    $validating_id = LogintobogganUtility::trustedRole();
-    $roles = ($form_state->hasValue('roles') ? array_filter($form_state->getValue('roles')) : array());
-    // TODO Reduce number of calls to entityTypeManager()
-    $validating_role = \Drupal::entityTypeManager()->getStorage('user_role')->load($validating_id);
-    $authenticated_role = \Drupal::entityTypeManager()->getStorage('user_role')->load(\Drupal\user\RoleInterface::AUTHENTICATED_ID);
-    if (!\Drupal::config('user.settings')->get('verify_mail', TRUE) && ($validating_role->getWeight() > $authenticated_role->getWeight())) {
-      $roles[$validating_role->id()] = $validating_role->id();
-    }
-
 
     // Remove unneeded values.
     $form_state->cleanValues();
@@ -168,7 +150,8 @@ class LoginToBogganRegister extends RegisterForm {
 
     // New administrative account without notification.
     if ($admin && !$notify) {
-      $this->messenger()->addStatus($this->t('Created a new user account for <a href=":url">%name</a>. No email has been sent.', [':url' => $account->toUrl()->toString(), '%name' => $account->getAccountName()]));
+      $this->messenger()->addStatus($this->t('Created a new user account for <a href=":url">%name</a>. 
+      No email has been sent.', [':url' => $account->toUrl()->toString(), '%name' => $account->getAccountName()]));
     }
     // No email verification required and immediate login switch on; log in user immediately.
     elseif (!$admin && !\Drupal::config('user.settings')->get('verify_mail') && $account->isActive() && $immediate == '1') {
@@ -179,18 +162,18 @@ class LoginToBogganRegister extends RegisterForm {
       \Drupal::messenger()->addStatus(t('Registration successful.'));
 
       $redirect_setting = \Drupal::config('logintoboggan.settings')->get('redirect_on_register');
-
       $redirect_on_register = !empty($redirect_setting) ? $redirect_setting : '/';
-
       $redirect = LogintobogganUtility::processRedirect($redirect_on_register, $account);
-
       $form_state->setRedirectUrl($redirect);
 
     }
     // No administrator approval required.
     elseif ($account->isActive() || $notify) {
       if (!$account->getEmail() && $notify) {
-        drupal_set_message($this->t('The new user <a href=":url">%name</a> was created without an email address, so no welcome message was sent.', array(':url' => $account->url(), '%name' => $account->getUsername())));
+        $this->messenger()->addMessage(t('The new user <a href=":url">%name</a> was created 
+         without an email address so no welcome message was sent',
+          [':url'=> Url::fromRoute('entity.user.edit_form', ['user' => $account->id()])->toString(),
+          '%name' => $account->get('name')->value] ));
       }
       else {
         $op = $notify ? 'register_admin_created' : 'register_no_approval_required';
@@ -198,10 +181,12 @@ class LoginToBogganRegister extends RegisterForm {
           if ($notify) {
             $this->messenger()->addMessage(t('A welcome message with further instructions
              has been emailed to the new user <a href=":url">%name</a>.',
-              [':url' => $account->url(), '%name' => $account->get('name')]));
+              [':url' => Url::fromRoute('entity.user.edit_form', ['user' => $account->id()])->toString(),
+                '%name' => $account->get('name')->value]));
           }
           else {
-            $this->messenger()->addMessage($this->t('A welcome message with further instructions has been sent to your email address.'));//drupal_set_message($this->t('A welcome message with further instructions has been sent to your email address.'));
+            $this->messenger()->addMessage($this->t('A welcome message with further 
+            instructions has been sent to your email address.'));
             $form_state->setRedirect('<front>');
           }
         }
@@ -216,5 +201,4 @@ class LoginToBogganRegister extends RegisterForm {
       $form_state->setRedirect('<front>');
     }
   }
-
 }

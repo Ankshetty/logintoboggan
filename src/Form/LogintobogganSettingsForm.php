@@ -259,11 +259,11 @@ class LogintobogganSettingsForm extends ConfigFormBase {
     }
     $redirect_register = $form_state->getValue('redirect_on_register');
     if (!empty($redirect_register) && substr($redirect_register, 0, 1) != '/') {
-      $form_state->setErrorByName('redirect_on_register', $this->t('redirects must start with a forward slash: e.g. /node/1'));
+      $form_state->setErrorByName('redirect_on_register', $this->t('redirects must start with a forward slash: e.g. / or /node/1'));
     }
     $redirect_confirm = $form_state->getValue('redirect_on_confirm');
     if (!empty($redirect_confirm) && substr($redirect_confirm, 0, 1) != '/') {
-      $form_state->setErrorByName('redirect_on_confirm', $this->t('redirects must start with a forward slash: e.g. /node/1'));
+      $form_state->setErrorByName('redirect_on_confirm', $this->t('redirects must start with a forward slash: e.g. / or  /node/1'));
     }
 
   }

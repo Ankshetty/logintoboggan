@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\logintoboggan\Plugin\Block\LoginTobogganloggedBlock.
- */
-
 namespace Drupal\logintoboggan\Plugin\Block;
 
 use Drupal\Core\Access\AccessResult;

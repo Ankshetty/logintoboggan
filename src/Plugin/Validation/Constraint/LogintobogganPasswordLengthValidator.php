@@ -6,10 +6,15 @@ use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 
 /**
- * validates length of password
+ * Validates length of password.
  */
 class LogintobogganPasswordLengthValidator extends ConstraintValidator {
 
+  /**
+   * Check lenth of password.
+   *
+   * {@inheritdoc}
+   */
   public function validate($value, Constraint $constraint) {
     $gotpass = $value->getValue();
     if (!empty($gotpass)) {

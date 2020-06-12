@@ -2,9 +2,11 @@
 
 namespace Drupal\logintoboggan\Access;
 
+use Drupal\Component\Datetime\Time;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Routing\Access\AccessInterface as RoutingAccessInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Url;
 use Symfony\Component\Routing\Route;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -14,22 +16,36 @@ use Symfony\Component\HttpFoundation\Request;
 class LogintobogganValidateAccess implements RoutingAccessInterface {
 
   /**
+   * The time service.
+   *
+   * @var \Drupal\Component\Datetime\TimeInterface
+   */
+  protected $time;
+
+  /**
+   * Class constructor.
+   */
+  public function __construct(Time $datetime) {
+    $this->time = $datetime;
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function appliesTo() {
-    return array('_logintoboggan_validate_email_access');
+    return ['_logintoboggan_validate_email_access'];
   }
 
   /**
    * {@inheritdoc}
    */
   public function access(Route $route, Request $request, AccountInterface $account) {
-    $path = \Drupal::request()->getpathInfo();
-    $arg = explode('/',$path);
-    $request_time = \Drupal::time()->getRequestTime();
-    $auth = $account->isAuthenticated();
+    $path = Url::fromRoute('<current>')->toString();
+    $arg = explode('/', $path);
+    $request_time = $this->time->getRequestTime();
     return $arg[4] < $request_time
       ? AccessResult::allowed()
       : AccessResult::forbidden();
   }
+
 }

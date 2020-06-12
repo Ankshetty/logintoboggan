@@ -9,10 +9,15 @@ use Symfony\Component\Validator\Constraint;
  *
  * @Constraint(
  *   id = "LogintobogganMailName",
- *   label = @Translation("Unique email for user name required", context = "Validation")
+ *   message = @Translation("Unique email for user name required", context = "Validation")
  * )
  */
 class LogintobogganMailName extends Constraint {
+  /**
+   * Violation message.
+   *
+   * @var string
+   */
   public $message = 'You cannot use another user\'s email as a username.';
-}
 
+}

@@ -21,6 +21,7 @@ logintoboggan.denied:
     _title: 'Access denied'
     _controller: '\Drupal\logintoboggan\Controller\LogintobogganController::logintobogganDenied'
   requirements:
+    # Access control not required as route just serves login to anon users.
     _access: 'TRUE'
 
 logintobogganform.settings:

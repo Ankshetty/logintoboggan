@@ -13,5 +13,11 @@ use Symfony\Component\Validator\Constraint;
  * )
  */
 class LogintobogganPasswordLength extends Constraint {
+  /**
+   * Violation message.
+   *
+   * @var string
+   */
   public $message = 'This password does not meet the required length of %length characters.';
+
 }

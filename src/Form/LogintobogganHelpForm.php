@@ -13,19 +13,36 @@ use Drupal\Core\Form\FormStateInterface;
  */
 class LogintobogganHelpForm extends ConfigFormBase {
 
+  /**
+   * Module holder variable.
+   *
+   * @var \Drupal\Core\Extension\ModuleHandler
+   */
   protected $moduleHandler;
 
+  /**
+   * LogintobogganHelpForm constructor.
+   *
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   Gets config in scope as dependency.
+   * @param \Drupal\Core\Extension\ModuleHandler $module_handler
+   *   Gets module handler in scope.
+   */
   public function __construct(ConfigFactoryInterface $config_factory, ModuleHandler $module_handler) {
     parent::__construct($config_factory);
     $this->moduleHandler = $module_handler;
   }
 
+  /**
+   * Inject config and module services.
+   */
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('config.factory'),
       $container->get('module_handler')
     );
   }
+
   /**
    * {@inheritdoc}
    */
@@ -41,17 +58,12 @@ class LogintobogganHelpForm extends ConfigFormBase {
       'logintoboggan.settings',
     ];
   }
-  /**
-   * Gets the roles to display in this form.
-   *
-   * @return \Drupal\user\RoleInterface[]
-   *   An array of role objects.
-   */
+
   /**
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    $example = t('
+    $example = $this->t('
       [user:name],
 
       Thank you for registering.
@@ -63,12 +75,13 @@ class LogintobogganHelpForm extends ConfigFormBase {
 
       This will verify your account and log you into the site. In the future you will be able to log in to [site:login-url] using the username and password that you created during registration.
     ');
-    $form['foo'] = array(
+    $form['foo'] = [
       '#type' => 'textarea',
       '#default_value' => $example,
       '#rows' => 15,
-    );
+    ];
 
     return $form;
   }
+
 }

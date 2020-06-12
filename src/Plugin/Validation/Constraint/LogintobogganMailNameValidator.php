@@ -7,19 +7,19 @@ use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 
 /**
- * validates that user name that uses email is not using a pre-existing email
+ * Validates that user name that uses email is not using a pre-existing email.
  */
 class LogintobogganMailNameValidator extends ConstraintValidator {
 
   /**
-   * Check that user name is not an email used for another account
+   * Check that user name is not an email used for another account.
    *
    * {@inheritdoc}
    */
   public function validate($items, Constraint $constraint) {
     $parent = $items->getEntity();
     $uid = $parent->get('uid')->value;
-    $name  = $items->get(0)->value;
+    $name = $items->get(0)->value;
     $connection = Database::getConnection();
     if (is_null($uid)) {
       $result = $connection->select('users_field_data', 'ufd')
@@ -28,7 +28,8 @@ class LogintobogganMailNameValidator extends ConstraintValidator {
         ->countQuery()
         ->execute()
         ->fetchField();
-    } else {
+    }
+    else {
       $result = $connection->select('users_field_data', 'ufd')
         ->fields('ufd', ['mail'])
         ->condition('mail', $name, 'LIKE')
@@ -38,9 +39,10 @@ class LogintobogganMailNameValidator extends ConstraintValidator {
         ->fetchField();
     }
 
-    if($result > 0){
+    if ($result > 0) {
       $this->context->addViolation($constraint->message, []);
-  }
+    }
 
   }
+
 }

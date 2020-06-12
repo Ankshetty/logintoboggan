@@ -4,11 +4,15 @@ namespace Drupal\logintoboggan\Form;
 
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\logintoboggan\Utility\LogintobogganUtility;
-use Drupal\user\Entity\User;
 use Drupal\user\RegisterForm;
 use Drupal\Core\Url;
 
-class LoginToBogganRegister extends RegisterForm {
+/**
+ * Provide alternative registration form to include LT components and submit.
+ *
+ * @package Drupal\logintoboggan\Form
+ */
+class LogintobogganRegister extends RegisterForm {
 
   /**
    * {@inheritdoc}
@@ -21,10 +25,10 @@ class LoginToBogganRegister extends RegisterForm {
     // Pass access information to the submit handler. Running an access check
     // inside the submit function interferes with form processing and breaks
     // hook_form_alter().
-    $form['administer_users'] = array(
+    $form['administer_users'] = [
       '#type' => 'value',
       '#value' => $admin,
-    );
+    ];
 
     $form['#attached']['library'][] = 'core/drupal.form';
 
@@ -45,30 +49,30 @@ class LoginToBogganRegister extends RegisterForm {
     // Start with the default user account fields.
     $form = parent::form($form, $form_state, $account);
 
-    //check setting for email confirmation
-    $mail_confirm =\Drupal::config('logintoboggan.settings')->get('confirm_email_at_registration');
+    // Check setting for email confirmation.
+    $mail_confirm = $this->config('logintoboggan.settings')->get('confirm_email_at_registration');
 
-    //Display a confirm e-mail address box if option is enabled.
+    // Display a confirm e-mail address box if option is enabled.
     if ($mail_confirm) {
-      $form['account']['conf_mail'] = array(
+      $form['account']['conf_mail'] = [
         '#type' => 'textfield',
-        '#title' => t('Confirm e-mail address'),
+        '#title' => $this->t('Confirm e-mail address'),
         '#weight' => -28,
         '#maxlength' => 64,
-        '#description' => t('Please re-type your e-mail address to confirm it is accurate.'),
+        '#description' => $this->t('Please re-type your e-mail address to confirm it is accurate.'),
         '#required' => TRUE,
-      );
+      ];
 
       // Weight things properly so that the order is name, mail, conf_mail.
       $form['account']['name']['#weight'] = -30;
       $form['account']['mail']['#weight'] = -29;
     }
 
-    $pass = \Drupal::config('user.settings')->get('user_email_verification');
+    $pass = $this->config('user.settings')->get('user_email_verification');
     $min_pass = \Drupal::config('logintoboggan.settings')->get('minimum_password_length', 0);
     if ($pass && $min_pass > 0) {
       $form['account']['pass']['#description'] = isset($form['account']['pass']['#description']) ? $form['account']['pass']['#description'] . " " : "";
-      $form['account']['pass']['#description'] .= t('Password must be at least %length characters.', array('%length' => $min_pass));
+      $form['account']['pass']['#description'] .= $this->t('Password must be at least %length characters.', ['%length' => $min_pass]);
     }
 
     return $form;
@@ -87,18 +91,13 @@ class LoginToBogganRegister extends RegisterForm {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    \Drupal::logger('logintoboggan')->notice('submitForm handler is being called in LoginToBogganRegister');
-
     $admin = $form_state->getValue('administer_users');
-    $reg_pass_set = !\Drupal::config('user.settings')->get('verify_mail', TRUE);
-
     if (!\Drupal::config('user.settings')->get('verify_mail') || $admin) {
       $pass = $form_state->getValue('pass');
     }
     else {
       $pass = user_password();
     }
-
 
     // Remove unneeded values.
     $form_state->cleanValues();
@@ -119,14 +118,13 @@ class LoginToBogganRegister extends RegisterForm {
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
     parent::validateForm($form, $form_state);
-    //Check to see whether our e-mail address matches the confirm address if enabled.
-    if ( \Drupal::config('logintoboggan.settings')->get('confirm_email_at_registration') && $form_state->hasValue('conf_mail')) {
+    // Check email address matches the confirm address if enabled.
+    if ($this->config('logintoboggan.settings')->get('confirm_email_at_registration') && $form_state->hasValue('conf_mail')) {
       if ($form_state->getValue('mail') != $form_state->getValue('conf_mail')) {
-        $form_state->setErrorByName('conf_mail', t('Your e-mail address and confirmed e-mail address must match.'));
+        $form_state->setErrorByName('conf_mail', $this->t('Your e-mail address and confirmed e-mail address must match.'));
       }
     }
   }
-
 
   /**
    * {@inheritdoc}
@@ -143,8 +141,12 @@ class LoginToBogganRegister extends RegisterForm {
     $form_state->set('user', $account);
     $form_state->setValue('uid', $account->id());
 
-    $this->logger('user')->notice('New user: %name %email.', array('%name' => $form_state->getValue('name'), '%email' => '<' . $form_state->getValue('mail') . '>', 'type' => $account->link($this->t('Edit'), 'edit-form')));
-
+    $this->logger('user')
+      ->notice('New user: %name %email.', [
+        '%name' => $form_state->getValue('name'),
+        '%email' => '<' . $form_state->getValue('mail') . '>',
+        'type' => $account->link($this->t('Edit'), 'edit-form'),
+      ]);
 
     $immediate = \Drupal::config('logintoboggan.settings')->get('immediate_login_on_register');
 
@@ -153,36 +155,39 @@ class LoginToBogganRegister extends RegisterForm {
       $this->messenger()->addStatus($this->t('Created a new user account for <a href=":url">%name</a>. 
       No email has been sent.', [':url' => $account->toUrl()->toString(), '%name' => $account->getAccountName()]));
     }
-    // No email verification required and immediate login switch on; log in user immediately.
+    // No email verification required and immediate login switch on;
+    // log in user immediately.
     elseif (!$admin && !\Drupal::config('user.settings')->get('verify_mail') && $account->isActive() && $immediate == '1') {
       user_login_finalize($account);
-      //notify after login so that we get hash based on last login
+      // Notify after login so that we get hash based on last login.
       _user_mail_notify('register_no_approval_required', $account);
 
-      \Drupal::messenger()->addStatus(t('Registration successful.'));
+      $this->messenger()->addStatus($this->t('Registration successful.'));
 
       $redirect_setting = \Drupal::config('logintoboggan.settings')->get('redirect_on_register');
       $redirect_on_register = !empty($redirect_setting) ? $redirect_setting : '/';
       $redirect = LogintobogganUtility::processRedirect($redirect_on_register, $account);
       $form_state->setRedirectUrl($redirect);
-
     }
     // No administrator approval required.
     elseif ($account->isActive() || $notify) {
       if (!$account->getEmail() && $notify) {
-        $this->messenger()->addMessage(t('The new user <a href=":url">%name</a> was created 
-         without an email address so no welcome message was sent',
-          [':url'=> Url::fromRoute('entity.user.edit_form', ['user' => $account->id()])->toString(),
-          '%name' => $account->get('name')->value] ));
+        $this->messenger()->addMessage($this->t('The new user <a href=":url">%name</a> was created 
+         without an email address so no welcome message was sent', [
+           ':url' => Url::fromRoute('entity.user.edit_form', ['user' => $account->id()])->toString(),
+           '%name' => $account->get('name')->value,
+         ]));
       }
       else {
         $op = $notify ? 'register_admin_created' : 'register_no_approval_required';
         if (_user_mail_notify($op, $account)) {
           if ($notify) {
-            $this->messenger()->addMessage(t('A welcome message with further instructions
-             has been emailed to the new user <a href=":url">%name</a>.',
-              [':url' => Url::fromRoute('entity.user.edit_form', ['user' => $account->id()])->toString(),
-                '%name' => $account->get('name')->value]));
+            $this->messenger()->addMessage($this->t('A welcome message with further instructions
+             has been emailed to the new user <a href=":url">%name</a>.', [
+               ':url' => Url::fromRoute('entity.user.edit_form',
+                ['user' => $account->id()])->toString(),
+               '%name' => $account->get('name')->value,
+             ]));
           }
           else {
             $this->messenger()->addMessage($this->t('A welcome message with further 
@@ -195,10 +200,11 @@ class LoginToBogganRegister extends RegisterForm {
     // Administrator approval required.
     else {
       _user_mail_notify('register_pending_approval', $account);
-      $this->messenger()->addMessage(t('Thank you for applying for an account. Your account
+      $this->messenger()->addMessage($this->t('Thank you for applying for an account. Your account
         is currently pending approval by the site administrator..<br />In the meantime, 
         a welcome message with further instructions has been sent to your email address.'));
       $form_state->setRedirect('<front>');
     }
   }
+
 }

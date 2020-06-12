@@ -1,6 +1,7 @@
 services:
   access_check.logintoboggan.validate_access:
     class: Drupal\logintoboggan\Access\LogintobogganValidateAccess
+    arguments: ['@datetime.time']
     tags:
       - { name: access_check, applies_to: _logintoboggan_validate_email_access }
   access_check.logintoboggan.revalidate_access:

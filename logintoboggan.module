@@ -348,14 +348,6 @@ function logintoboggan_user_login($account) {
 }
 
 /**
- * THEME FUNCTIONS.
- *
- * You may override and change any of these custom HTML output functions
- * by copy/pasting them into your theme file, at which point you can
- * customize anything, provided you are using the default Twig engine.
- */
-
-/**
  * Implements hook_preprocess_() for theme function defined at hook_theme above.
  *
  * Theme the username title of the user login form

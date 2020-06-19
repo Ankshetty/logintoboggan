@@ -32,15 +32,17 @@ class LogintobogganController extends ControllerBase {
     // $cur_account = \Drupal::currentUser();
     $cur_account = $this->currentUser();
 
+    $hash_2 = user_pass_rehash($account, $timestamp);
+
     // If you don't need to verify email (i.e. can set password), that's
     // effectively ok for immediate login.
-    $immediate_login = $this->config('user.settings')->get('verify_mail');
+    $must_verify = $this->config('user.settings')->get('verify_mail');
     // Does have to verify but has not logged in previously OR
     // the user can login without verifying email first
     // - the hashed password is correct.
-    if ((($this->config('user.settings')->get('verify_mail')
-      && !$account->getLastLoginTime()) || ($immediate_login))
-      && $hashed_pass == user_pass_rehash($account, $timestamp)) {
+    $stop = '';
+    if (($must_verify && !$account->getLastLoginTime()) || (!$must_verify &&
+        $hashed_pass == user_pass_rehash($account, $timestamp))) {
 
       $this->getLogger('user')->notice('E-mail validation URL used for %name with 
       timestamp @timestamp.',
@@ -59,7 +61,7 @@ class LogintobogganController extends ControllerBase {
         // account hasn't been blocked.
         case 'login':
           // Only show the validated message if there's a valid trusted role.
-          if ($immediate_login) {
+          if (!$must_verify) {
             $this->messenger()->addMessage($this->t('You have successfully validated your e-mail address.'), 'status');
           }
           if ($account->isBlocked()) {
@@ -76,7 +78,7 @@ class LogintobogganController extends ControllerBase {
 
         // Admin validation.
         case 'admin':
-          if ($immediate_login) {
+          if (!$must_verify) {
             _user_mail_notify('status_activated', $account);
           }
 

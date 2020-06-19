@@ -110,14 +110,14 @@ class LogintobogganSettingsForm extends ConfigFormBase {
         and is merely here for convenience). The benefit of doing this is users 
         can login immediately. The downside is that you  have logged-in
         users that have not yet confirmed a valid email address. If you are 
-        doing this, we recommend that you give authenticated users (Drupal 
-        term for logged-in)limited permissions and you then give more 
-        permissions to a trusted role that gets assigned once the validation 
-        email link is used (see below). If you initially allow password setting
+        doing this, we recommend that you give authenticated users 
+        limited permissions, and you give more 
+        permissions to a trusted role will be assigned once the validation 
+        email link is used. If you initially allow password setting
          on registration, but change this later, we recommend you reset the 
          trusted role back to authenticated user because the role no longer 
-         has any purpose. <br />NOTE: If you enable this feature, you should 
-         edit the <a href=":settings">Welcome (no approval required)</a> text.',
+         has any purpose. <br />NOTE: If you enable this feature, you need to 
+         edit the <a href=":settings">Welcome (no approval required)</a> text. ',
           [':settings' => Url::fromRoute('entity.user.admin_form')->toString()]) . $help_text,
     ];
 

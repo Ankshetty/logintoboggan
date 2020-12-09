@@ -145,7 +145,7 @@ class LogintobogganRegister extends RegisterForm {
       ->notice('New user: %name %email.', [
         '%name' => $form_state->getValue('name'),
         '%email' => '<' . $form_state->getValue('mail') . '>',
-        'type' => $account->link($this->t('Edit'), 'edit-form'),
+        'type' => $account->toLink($this->t('Edit'), 'edit-form')->toString(),
       ]);
 
     $immediate = \Drupal::config('logintoboggan.settings')->get('immediate_login_on_register');

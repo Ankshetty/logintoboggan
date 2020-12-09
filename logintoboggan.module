@@ -58,7 +58,7 @@ function logintoboggan_cron() {
           $purged_users[] = $u->getAccountName();
         }
         $purged_users_list = implode(', ', $purged_users);
-        user_delete_multiple($no_role);
+        User::delete($users);
 
         // Log the purged users.
         if (!empty($purged_users)) {
@@ -206,7 +206,7 @@ function logintoboggan_form_user_pass_reset_alter(&$form, $form_state) {
   $path = \Drupal::request()->getpathInfo();
   $arg = explode('/', $path);
   if ($uid = (int) $arg[3]) {
-    if ($account = user::load($uid)) {
+    if ($account = User::load($uid)) {
       $roles = $account->getRoles();
       $trusted_role = LogintobogganUtility::trustedRole();
       $got_trusted = in_array($trusted_role, $roles);

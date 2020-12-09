@@ -27,7 +27,7 @@ class LogintobogganController extends ControllerBase {
    * This will return the output of the page.
    */
   public function logintobogganValidateEmail($user, $timestamp, $hashed_pass, $operation) {
-    $account = user::load($user);
+    $account = User::load($user);
 
     // $cur_account = \Drupal::currentUser();
     $cur_account = $this->currentUser();
@@ -122,7 +122,7 @@ class LogintobogganController extends ControllerBase {
    * This will return the output of the page.
    */
   public function logintobogganResendValidation($user) {
-    $account = user::load($user);
+    $account = User::load($user);
     _user_mail_notify('register_no_approval_required', $account);
 
     // Notify admin or user that e-mail was sent and return to user edit form.
@@ -133,7 +133,7 @@ class LogintobogganController extends ControllerBase {
       $this->messenger()->addMessage($this->t('A validation e-mail has been sent to your e-mail address. You will need to follow the instructions in that message in order to gain full access to the site.'));
     }
 
-    return new RedirectResponse(URL::fromRoute('entity.user.edit_form', ['user' => $user])->toString());
+    return new RedirectResponse(Url::fromRoute('entity.user.edit_form', ['user' => $user])->toString());
   }
 
   /**
